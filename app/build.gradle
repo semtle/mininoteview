@@ -1,0 +1,25 @@
+apply plugin: 'com.android.application'
+android {
+    compileSdkVersion 10
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId 'com.mininoteview.mod'
+        minSdkVersion 4
+        targetSdkVersion 4
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_6
+            targetCompatibility JavaVersion.VERSION_1_6
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+}

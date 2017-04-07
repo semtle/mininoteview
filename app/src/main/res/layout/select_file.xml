@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/selectFile"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:paddingBottom="4dip"
+        android:paddingTop="4dip"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/txtDirName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333333"
+        android:paddingBottom="8dip"
+        android:paddingTop="4dip"
+        android:textColor="#ffffff"
+        android:textSize="14sp"/>
+    <ListView
+        android:id="@id/android:list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:scrollbars="vertical"
+        />
+
+    <EditText
+        android:id="@+id/edtFileName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:inputType="text"
+        android:maxLines="1"/>
+
+    <CheckBox
+        android:id="@+id/encryptCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/encrypt_check"
+        />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:id="@+id/BottomBar"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_horizontal"
+                  android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/btnOK"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:text="@string/alert_dialog_ok"
+
+            />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/alert_dialog_cancel"
+
+            />
+    </LinearLayout>
+
+
+</LinearLayout>
