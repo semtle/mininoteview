@@ -372,7 +372,7 @@ public class Settings extends PreferenceActivity
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
 				.setTitle(R.string.prefFontSize)
 				.setCancelable(true)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					//		    @Override
 					public void onClick(DialogInterface dialog, int which)
@@ -382,7 +382,7 @@ public class Settings extends PreferenceActivity
 						setFontSize(size);
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
@@ -458,7 +458,7 @@ public class Settings extends PreferenceActivity
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
 				.setTitle(R.string.prefFontSizeOnList)
 				.setCancelable(true)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					//		    @Override
 					public void onClick(DialogInterface dialog, int which)
@@ -468,7 +468,7 @@ public class Settings extends PreferenceActivity
 						setFontSizeOnList(size);
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{

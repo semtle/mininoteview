@@ -59,10 +59,10 @@ public class SelectFileName extends ListActivity
 		setContentView(R.layout.select_file);
 
 		Button btnOK = (Button) findViewById(R.id.btnOK);
-		btnOK.setText(R.string.alert_dialog_ok);
+		btnOK.setText(R.string.action_ok);
 
 		Button btnCancel = (Button) findViewById(R.id.btnCancel);
-		btnCancel.setText(R.string.alert_dialog_cancel);
+		btnCancel.setText(R.string.action_cancel);
 
 		TextView txtTitle = (TextView) findViewById(R.id.txtTitle);
 		CheckBox encryptCheck = (CheckBox) findViewById(R.id.encryptCheckBox);
@@ -89,7 +89,7 @@ public class SelectFileName extends ListActivity
 			if(extras.getString(INTENT_MODE).equals(MODE_SAVE))
 			{
 				modeID = MODEID_SAVE;
-				txtTitle.setText(R.string.menu_save_as);
+				txtTitle.setText(R.string.action_save_as);
 				encryptFlag = extras.getBoolean(INTENT_ENCRYPT);
 				encryptCheck.setChecked(encryptFlag);
 
@@ -97,7 +97,7 @@ public class SelectFileName extends ListActivity
 			else if(extras.getString(INTENT_MODE).equals(MODE_COPY))
 			{
 				modeID = MODEID_COPY;
-				txtTitle.setText(R.string.longclick_menu_copy);
+				txtTitle.setText(R.string.action_copy);
 				ViewGroup selectFileLayout = (ViewGroup) findViewById(R.id.selectFile);
 				selectFileLayout.removeView(encryptCheck);
 				mExistEncryptCheckBox = false;
@@ -105,7 +105,7 @@ public class SelectFileName extends ListActivity
 			else if(extras.getString(INTENT_MODE).equals(MODE_MOVE))
 			{
 				modeID = MODEID_MOVE;
-				txtTitle.setText(R.string.longclick_menu_move);
+				txtTitle.setText(R.string.action_move);
 				ViewGroup selectFileLayout = (ViewGroup) findViewById(R.id.selectFile);
 				selectFileLayout.removeView(encryptCheck);
 				mExistEncryptCheckBox = false;

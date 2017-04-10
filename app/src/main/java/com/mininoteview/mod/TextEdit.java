@@ -145,7 +145,7 @@ public class TextEdit extends Activity
 			progressDlg.dismiss();
 			int duration = Toast.LENGTH_LONG;
 			if(autoSaveFlag) duration = Toast.LENGTH_SHORT;
-			Toast.makeText(TextEdit.this, getString(R.string.notify_file_save) + ": " + s, duration).show();
+			Toast.makeText(TextEdit.this, getString(R.string.toast_save) + ": " + s, duration).show();
 
 
 			setResultForActionGetContent();
@@ -206,7 +206,7 @@ public class TextEdit extends Activity
 
 		if(aFile.isDirectory())
 		{
-			setTitleBarText("(" + getString(R.string.alert_dialog_newfile) + ")");
+			setTitleBarText("(" + getString(R.string.hint_newfile) + ")");
 			messageDigest = getMessageDigest();
 
 		}
@@ -304,7 +304,7 @@ public class TextEdit extends Activity
 
 		// ボタンのクリックリスナー
 		Button btnUpDir = (Button) bottombar.findViewById(R.id.LeftButton);
-		btnUpDir.setText(R.string.BottomMenu_close);
+		btnUpDir.setText(R.string.action_close);
 		btnUpDir.setOnClickListener(new View.OnClickListener()
 		{
 
@@ -318,7 +318,7 @@ public class TextEdit extends Activity
 		});
 		// ボタンのクリックリスナー
 		Button btnMenu = (Button) bottombar.findViewById(R.id.RightButton);
-		btnMenu.setText(R.string.BottomMenu_menu);
+		btnMenu.setText(R.string.action_menu);
 		btnMenu.setOnClickListener(new View.OnClickListener()
 		{
 
@@ -414,15 +414,15 @@ public class TextEdit extends Activity
 	{
 		super.onCreateOptionsMenu(menu);
 
-		menu.add(0, MENUID_CLOSE, 0, R.string.menu_close)
+		menu.add(0, MENUID_CLOSE, 0, R.string.action_close)
 				.setShortcut('0', 'c')
 				.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 
-		menu.add(0, MENUID_SAVE, 0, R.string.menu_save)
+		menu.add(0, MENUID_SAVE, 0, R.string.action_save)
 				.setShortcut('1', 's')
 				.setIcon(android.R.drawable.ic_menu_save);
 
-		menu.add(0, MENUID_SAVE_AS, 0, R.string.menu_save_as)
+		menu.add(0, MENUID_SAVE_AS, 0, R.string.action_save_as)
 				.setShortcut('2', 'a')
 				.setIcon(android.R.drawable.ic_menu_save);
 
@@ -474,7 +474,7 @@ public class TextEdit extends Activity
 					isEncrypt = data.getBooleanExtra(SelectFileName.INTENT_ENCRYPT, isEncrypt);
 
 					progressDlg = ProgressDialog.show(
-							TextEdit.this, null, getString(R.string.proc_open), true, false);
+							TextEdit.this, null, getString(R.string.notify_opening), true, false);
 					new FileReadThread().start();
 				}
 				break;
@@ -491,7 +491,7 @@ public class TextEdit extends Activity
 						new AlertDialog.Builder(TextEdit.this)
 								.setTitle(R.string.alert_overwrite)
 								.setCancelable(true)
-								.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+								.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 								{
 									public void onClick(DialogInterface dialog, int whichButton)
 									{
@@ -507,7 +507,7 @@ public class TextEdit extends Activity
 
 									}
 								})
-								.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+								.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 								{
 									public void onClick(DialogInterface dialog, int whichButton)
 									{
@@ -649,7 +649,7 @@ public class TextEdit extends Activity
 		else
 		{
 			progressDlg = ProgressDialog.show(
-					TextEdit.this, null, getString(R.string.proc_save), true, false);
+					TextEdit.this, null, getString(R.string.notify_saving), true, false);
 
 			try
 			{
@@ -693,9 +693,9 @@ public class TextEdit extends Activity
 		//ダイアログを構成
 //		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
-				.setTitle(R.string.pass_input_text)
+				.setTitle(R.string.title_password)
 				.setCancelable(true)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					//		    @Override
 					public void onClick(DialogInterface dialog, int which)
@@ -711,12 +711,12 @@ public class TextEdit extends Activity
 						}
 						else
 						{
-							Toast.makeText(TextEdit.this, R.string.password_not_match, Toast.LENGTH_LONG).show();
+							Toast.makeText(TextEdit.this, R.string.alert_password_mismatch, Toast.LENGTH_LONG).show();
 							getPasswordForEncryptAndSave();
 						}
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
@@ -741,7 +741,7 @@ public class TextEdit extends Activity
 			binText = MyUtil.encrypt(binText, PasswordBox.getPassDigest());
 
 			progressDlg = ProgressDialog.show(
-					TextEdit.this, null, getString(R.string.proc_save), true, false);
+					TextEdit.this, null, getString(R.string.notify_saving), true, false);
 			new FileWriteThread().start();
 
 		}
@@ -766,8 +766,8 @@ public class TextEdit extends Activity
 
 
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
-				.setTitle(R.string.pass_input_text)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setTitle(R.string.title_password)
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int which)
 					{
@@ -783,12 +783,12 @@ public class TextEdit extends Activity
 						}
 						else
 						{
-							Toast.makeText(TextEdit.this, R.string.password_empty, Toast.LENGTH_LONG).show();
+							Toast.makeText(TextEdit.this, R.string.alert_password_empty, Toast.LENGTH_LONG).show();
 							getPasswordAndDecryptData();
 						}
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
@@ -862,7 +862,7 @@ public class TextEdit extends Activity
 				new AlertDialog.Builder(TextEdit.this)
 						.setTitle(R.string.alert_close_modified_file)
 						.setCancelable(true)
-						.setPositiveButton(R.string.alert_dialog_yes, new DialogInterface.OnClickListener()
+						.setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener()
 						{
 							public void onClick(DialogInterface dialog, int whichButton)
 							{
@@ -870,7 +870,7 @@ public class TextEdit extends Activity
 								closeAfterSaveFlag = true;
 							}
 						})
-						.setNeutralButton(R.string.alert_dialog_no,
+						.setNeutralButton(R.string.action_no,
 								new DialogInterface.OnClickListener()
 								{
 									public void onClick(DialogInterface dialog, int whichButton)
@@ -879,7 +879,7 @@ public class TextEdit extends Activity
 										finish();
 									}
 								})
-						.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+						.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 						{
 							public void onClick(DialogInterface dialog, int whichButton)
 							{
@@ -940,7 +940,7 @@ public class TextEdit extends Activity
 		{
 			String s = getHeadLineForFilename();
 			if(s.length() <= 0)
-				s = getString(R.string.alert_dialog_newfile);
+				s = getString(R.string.hint_newfile);
 			param_filepath = filepath + "/" + s + ".txt";
 		}
 		else
@@ -1143,7 +1143,7 @@ public class TextEdit extends Activity
 	{
 		new AlertDialog.Builder(this)
 				.setMessage(msg)
-				.setNeutralButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
@@ -1156,7 +1156,7 @@ public class TextEdit extends Activity
 	{
 		new AlertDialog.Builder(this)
 				.setMessage(msg)
-				.setNeutralButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{

@@ -130,19 +130,19 @@ public class MainActivity extends ListActivity
 	{
 		super.onCreateOptionsMenu(menu);
 
-		menu.add(0, MENUID_NEW, 0, R.string.menu_new)
+		menu.add(0, MENUID_NEW, 0, R.string.action_new)
 				.setShortcut('0', 'n')
 				.setIcon(android.R.drawable.ic_menu_edit);
 
-		menu.add(0, MENUID_NEW_FOLDER, 0, R.string.menu_new_folder)
+		menu.add(0, MENUID_NEW_FOLDER, 0, R.string.action_new_folder)
 				.setShortcut('1', 'f')
 				.setIcon(android.R.drawable.ic_menu_add);
 
-		menu.add(0, MENUID_CLOSE, 0, R.string.menu_close)
+		menu.add(0, MENUID_CLOSE, 0, R.string.action_close)
 				.setShortcut('2', 'c')
 				.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 
-		menu.add(0, MENUID_SETTINGS, 0, R.string.menu_preferences)
+		menu.add(0, MENUID_SETTINGS, 0, R.string.action_preferences)
 				.setShortcut('3', 'n')
 				.setIcon(android.R.drawable.ic_menu_preferences);
 
@@ -431,12 +431,12 @@ public class MainActivity extends ListActivity
 
 			final File file = clickedFile;
 			CharSequence[] items = new CharSequence[LGM_TOTAL];
-			items[LGM_OPEN] = getText(R.string.longclick_menu_open);
-			items[LGM_DELETE] = getText(R.string.longclick_menu_delete);
-			items[LGM_RENAME] = getText(R.string.longclick_menu_rename);
-			items[LGM_COPY] = getText(R.string.longclick_menu_copy);
-			items[LGM_MOVE] = getText(R.string.longclick_menu_move);
-			items[LGM_CANCEL] = getText(R.string.longclick_menu_cancel);
+			items[LGM_OPEN] = getText(R.string.action_open);
+			items[LGM_DELETE] = getText(R.string.action_delete);
+			items[LGM_RENAME] = getText(R.string.action_rename);
+			items[LGM_COPY] = getText(R.string.action_copy);
+			items[LGM_MOVE] = getText(R.string.action_move);
+			items[LGM_CANCEL] = getText(R.string.action_cancel);
 
 			new AlertDialog.Builder(this)
 					.setTitle(R.string.longclick_menu_title)
@@ -516,17 +516,17 @@ public class MainActivity extends ListActivity
 	{
 		final File file = aFile;
 		new AlertDialog.Builder(MainActivity.this)
-				.setTitle(getText(R.string.longclick_menu_delete))
-				.setMessage(getText(R.string.longclick_menu_delete_confirm) + ": " + file.getName())
+				.setTitle(getText(R.string.action_delete))
+				.setMessage(getText(R.string.alert_confirm_delete) + ": " + file.getName())
 				.setCancelable(true)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
 						execDeleteFile(file);
 					}
 				})
-				.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
@@ -562,16 +562,16 @@ public class MainActivity extends ListActivity
 		String title;
 		if(file.isDirectory())
 		{
-			title = getString(R.string.folder_name_input);
+			title = getString(R.string.title_folder_name);
 		}
 		else
 		{
-			title = getString(R.string.file_name_input);
+			title = getString(R.string.title_file_name);
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(title)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int which)
 					{
@@ -592,7 +592,7 @@ public class MainActivity extends ListActivity
 							{
 								if(MyUtil.renameFile(file, new File(curDir + name)))
 								{
-									Toast.makeText(MainActivity.this, R.string.done_rename_file, Toast.LENGTH_SHORT).show();
+									Toast.makeText(MainActivity.this, R.string.toast_rename_file, Toast.LENGTH_SHORT).show();
 									refreshDir();
 								}
 								else
@@ -616,12 +616,12 @@ public class MainActivity extends ListActivity
 						{
 							//nameが空だったら終了する
 							//	finish();
-							Toast.makeText(MainActivity.this, R.string.input_name_empty, Toast.LENGTH_SHORT).show();
+							Toast.makeText(MainActivity.this, R.string.alert_name_empty, Toast.LENGTH_SHORT).show();
 							renameFile(file);//もう一度やりなおし
 						}
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 		{
 			public void onClick(DialogInterface dialog, int whichButton)
 			{
@@ -670,12 +670,12 @@ public class MainActivity extends ListActivity
 		EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 		///nameEditText.setText(R.string.default_new_folder_name);
 
-		nameEditText.setText(R.string.alert_dialog_newfolder);
+		nameEditText.setText(R.string.hint_newfolder);
 
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.folder_name_input)
-				.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+		builder.setTitle(R.string.title_folder_name)
+				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface dialog, int which)
 					{
@@ -717,12 +717,12 @@ public class MainActivity extends ListActivity
 						}
 						else
 						{
-							Toast.makeText(MainActivity.this, R.string.input_name_empty, Toast.LENGTH_LONG).show();
+							Toast.makeText(MainActivity.this, R.string.alert_name_empty, Toast.LENGTH_LONG).show();
 							createDir();
 						}
 
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener()
+				}).setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
 		{
 			public void onClick(DialogInterface dialog, int whichButton)
 			{
@@ -788,7 +788,7 @@ public class MainActivity extends ListActivity
 			mBottombar = getLayoutInflater().inflate(R.layout.bottom_bar, null);
 			mMainlayout = (ViewGroup) findViewById(R.id.mainLayout);
 			Button btnUpDir = (Button) mBottombar.findViewById(R.id.LeftButton);
-			btnUpDir.setText(R.string.BottomMenu_updir);
+			btnUpDir.setText(R.string.action_updir);
 			btnUpDir.setOnClickListener(new View.OnClickListener()
 			{
 				public void onClick(View v)
@@ -798,7 +798,7 @@ public class MainActivity extends ListActivity
 
 			});
 			Button btnMenu = (Button) mBottombar.findViewById(R.id.RightButton);
-			btnMenu.setText(R.string.BottomMenu_menu);
+			btnMenu.setText(R.string.action_menu);
 			btnMenu.setOnClickListener(new View.OnClickListener()
 			{
 				public void onClick(View v)
@@ -859,7 +859,7 @@ public class MainActivity extends ListActivity
 	{
 		new AlertDialog.Builder(this)
 				.setMessage(msg)
-				.setNeutralButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					// この中に"YES"時の処理をいれる。
 					public void onClick(DialogInterface dialog, int whichButton)

@@ -202,7 +202,7 @@ class MyUtil
 			throw new MyUtilException(R.string.util_error_invalid_fileheader, "This File is NOT BF01");
 		*/
 		if(!isChiData(data))
-			throw new MyUtilException(R.string.util_error_invalid_fileheader, "Not a valid chi file");
+			throw new MyUtilException(R.string.error_invalid_chi, "Not a valid chi file");
 
 		int BFSize = 0;
 		int k = 1;
@@ -217,7 +217,7 @@ class MyUtil
 		}
 
 		if(passDigest == null)
-			throw new MyUtilException(R.string.util_error_passdigest_is_null, "password input error");
+			throw new MyUtilException(R.string.error_null_passdigest, "password input error");
 
 
 //////////////////////////////////////////////////
@@ -248,7 +248,7 @@ class MyUtil
 
 		if(!MessageDigest.isEqual(orgMd5, dataMd5))
 		{
-			throw new MyUtilException(R.string.util_error_md5_check_sum_error, "Password is not correct.");
+			throw new MyUtilException(R.string.error_password, "Password is not correct.");
 		}
 
 		byte[] dec_data = new byte[BFSize];//return用buffer
@@ -339,7 +339,7 @@ class MyUtil
 		if(dir.exists())
 		{
 //				throw new IOException("Folder/File already exists.");
-			throw new MyUtilException(R.string.util_error_file_already_exists, "Folder/File already exists.");
+			throw new MyUtilException(R.string.error_file_exists, "Folder/File already exists.");
 		}
 		else
 		{
@@ -355,7 +355,7 @@ class MyUtil
 		if(dstFile.exists())
 		{
 //				throw new IOException("Folder/File already exists: " + dstFile.getName());
-			throw new MyUtilException(R.string.util_error_file_already_exists, "Folder/File already exists.");
+			throw new MyUtilException(R.string.error_file_exists, "Folder/File already exists.");
 		}
 		else
 		{
@@ -420,7 +420,7 @@ class MyUtil
 	{
 		new AlertDialog.Builder(activity)
 				.setMessage(msg)
-				.setNeutralButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener()
+				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
 					// この中に"OK"時の処理をいれる。
 					public void onClick(DialogInterface dialog, int whichButton)

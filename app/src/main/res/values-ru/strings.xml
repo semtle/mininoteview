@@ -2,38 +2,36 @@
 <!-- Note: The space placed at last of strings is ignored  -->
 <!-- <string name="menu_new">New </string> is same as <string name="menu_new">New</string>  -->
 <resources>
-    <string name="menu_new">Создать</string>
-    <string name="menu_close">Закрыть</string>
-    <string name="menu_save">Сохранить</string>
-    <string name="menu_save_as">Как…</string>
-    <string name="menu_preferences">Настройки</string>
-    <string name="menu_new_folder">Новая папка</string>
-    <string name="proc_open">Открытие файла</string>
-    <string name="proc_save">Сохранение файла</string>
-    <string name="pass_input_text">Введите пароль</string>
-    <string name="encrypt_check">Зашифровать</string>
-    <string name="password_not_match">Пароли не совпадают</string>
-    <string name="password_empty">Пароль отключён</string>
+    <string name="action_close">Закрыть</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_save_as">Как…</string>
+    <string name="action_preferences">Настройки</string>
+    <string name="action_new_folder">Новая папка</string>
+    <string name="notify_opening">Открытие файла</string>
+    <string name="notify_saving">Сохранение файла</string>
+    <string name="title_password">Введите пароль</string>
+    <string name="title_encrypt">Зашифровать</string>
+    <string name="alert_password_mismatch">Пароли не совпадают</string>
+    <string name="alert_password_empty">Пароль отключён</string>
 
     <string name="longclick_menu_title">Действия</string>
-    <string name="longclick_menu_open">Открыть</string>
-    <string name="longclick_menu_delete">Удалить</string>
-    <string name="longclick_menu_cancel">Отмена</string>
-    <string name="longclick_menu_rename">Переименовать</string>
-    <string name="longclick_menu_copy">Копировать</string>
-    <string name="longclick_menu_move">Переместить</string>
-    <string name="longclick_menu_delete_confirm">Подтвердите удаление</string>
-    <string name="alert_dialog_ok">OK</string>
-    <string name="alert_dialog_yes">Да</string>
-    <string name="alert_dialog_no">Нет</string>
-    <string name="alert_dialog_cancel">Отмена</string>
-    
-    
-    <string name="folder_name_input">Введите имя папки</string>
-    <string name="file_name_input">Введите имя файла</string>
-    <string name="input_name_empty">Имя не может быть пустым</string>
-    <string name="done_rename_file">Переименование выполнено</string>
-    <string name="done_move_file">Перемещение выполнено</string>
+    <string name="action_open">Открыть</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_copy">Копировать</string>
+    <string name="action_move">Переместить</string>
+    <string name="alert_confirm_delete">Подтвердите удаление</string>
+    <string name="action_ok">OK</string>
+    <string name="action_yes">Да</string>
+    <string name="action_no">Нет</string>
+
+
+    <string name="title_folder_name">Введите имя папки</string>
+    <string name="title_file_name">Введите имя файла</string>
+    <string name="alert_name_empty">Имя не может быть пустым</string>
+    <string name="toast_rename_file">Переименование выполнено</string>
+    <string name="toast_move_file">Перемещение выполнено</string>
 
     <string name="error_file_cannot_copy">Копирование невозможно</string>
     <string name="error_file_cannot_read">Не удалось открыть файл</string>
@@ -43,9 +41,9 @@
 
     <string name="alert_overwrite">Заменить существующий файл?</string>
     <string name="alert_close_modified_file">Сохранить изменения?</string>
-    
+
     <string name="alert_text_trancated">Текст усечён (файл слишком велик?)</string><!-- if truncated after reading file-->
-    <string name="notify_file_save">Сохранено</string><!--toast when file saved. "save: file.txt"  -->
+    <string name="toast_save">Сохранено</string><!--toast when file saved. "save: file.txt"  -->
     <!-- syntax error in search box-->
     <string name="alert_general_error">Ошибка</string><!-- General error."Error \nblablablabla" e.g. save to "/" cause FileNotFoundException-->
     <string name="alert_cannot_openfile">Не удалось открыть файл</string><!-- Can not open file: file.unknown_type-->
@@ -53,22 +51,21 @@
     <string name="notify_now_in_progress">Подождите…</string>
 
 
-    <string name="BottomMenu_updir">Наверх</string>
-    <string name="BottomMenu_menu">Меню</string>
-    <string name="BottomMenu_close">Закрыть</string>
+    <string name="action_updir">Наверх</string>
+    <string name="action_menu">Меню</string>
 
     <!-- for Settings activity -->
 
 
     <!--  Preferences -->
-	<string name="category_common">Общие</string>
-	<string name="category_dir">Обзор файлов</string>
-	<string name="category_edit">Редактор заметок</string>
+    <string name="category_common">Общие</string>
+    <string name="category_dir">Обзор файлов</string>
+    <string name="category_edit">Редактор заметок</string>
 
     <string name="prefPWResetTimer">Кэшировать пароль</string>
     <!-- <string name="prefPWResetTimerSummary">Время до повторного запроса пароля</string> -->
     <string name="prefPWResetTimerSummary">мин.</string>
-    
+
     <string name="prefCharsetName">Кодировка</string>
     <string name="prefCharsetNameSummary">Кодировка символов</string>
 
@@ -99,21 +96,21 @@
     <string name="prefFontSizeOnListSampleText">Размер (ТП)</string>
 
 
-	<!-- for grep activity -->
+    <!-- for grep activity -->
 
 
     <!--  for template list activity -->
 
     <!-- Erro Message in MyUtil class -->
-    <string name="util_error_invalid_filesize1">Неверный формат файла</string><!-- chi file invalid.(less than 32 byte) -->
-    <string name="util_error_invalid_filesize2">Неверный размер файла (не кратен 8)</string><!-- Invalid file size (not multiples of 8) -->
-    <string name="util_error_invalid_fileheader">Неверный криптоалгоритм файла</string><!-- Invalid file header (not start with BF01) -->
-    <string name="util_error_passdigest_is_null">Ошибка ввода пароля</string><!-- password Digest is null -->
-    <string name="util_error_md5_check_sum_error">Пароль неверен</string><!-- check sum error with got password -->
-    
-    <string name="util_error_file_already_exists">Объект с таким именем уже существует</string>
+    <!-- chi file invalid.(less than 32 byte) -->
+    <!-- Invalid file size (not multiples of 8) -->
+    <string name="error_invalid_chi">Неверный криптоалгоритм файла</string><!-- Invalid file header (not start with BF01) -->
+    <string name="error_null_passdigest">Ошибка ввода пароля</string><!-- password Digest is null -->
+    <string name="error_password">Пароль неверен</string><!-- check sum error with got password -->
+
+    <string name="error_file_exists">Объект с таким именем уже существует</string>
     <!-- when create dir or rename file -->
-    
-    
- </resources>
+
+
+</resources>
 

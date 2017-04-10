@@ -179,7 +179,7 @@ class FileOperatorTask extends AsyncTask<String, Integer, Boolean>
 		}
 		if(srcFile.renameTo(dstFile))
 		{
-			mResultMessage = mActivity.getString(R.string.done_move_file) + ": " + dstFile.getAbsolutePath();
+			mResultMessage = mActivity.getString(R.string.toast_move_file) + ": " + dstFile.getAbsolutePath();
 			return true;
 		}
 

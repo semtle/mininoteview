@@ -45,7 +45,7 @@
         android:id="@+id/encryptCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/encrypt_check"
+        android:text="@string/title_encrypt"
         />
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:id="@+id/BottomBar"
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:text="@string/alert_dialog_ok"
+            android:text="@string/action_ok"
 
             />
 
@@ -70,7 +70,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/alert_dialog_cancel"
+            android:text="@string/action_cancel"
 
             />
     </LinearLayout>

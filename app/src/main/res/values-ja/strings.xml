@@ -1,33 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="menu_new">新規メモ</string>
-    <string name="menu_close">閉じる</string>
-    <string name="menu_save">保存</string>
-    <string name="menu_save_as">名前を付けて保存</string>
-    <string name="menu_preferences">設定</string>
-    <string name="menu_new_folder">新規フォルダー</string>
-    <string name="proc_open">ファイルを開いています。</string>
-    <string name="proc_save">ファイルを保存しています。</string>
-    <string name="pass_input_text">パスワード入力</string>
-    <string name="encrypt_check">暗号化</string>
-    <string name="password_not_match">パスワードが一致しません。もう一度試してください。</string>
-    <string name="password_empty">パスワードが空です。</string>
+    <string name="action_close">閉じる</string>
+    <string name="action_save">保存</string>
+    <string name="action_save_as">名前を付けて保存</string>
+    <string name="action_preferences">設定</string>
+    <string name="action_new_folder">新規フォルダー</string>
+    <string name="notify_opening">ファイルを開いています。</string>
+    <string name="notify_saving">ファイルを保存しています。</string>
+    <string name="title_password">パスワード入力</string>
+    <string name="title_encrypt">暗号化</string>
+    <string name="alert_password_mismatch">パスワードが一致しません。もう一度試してください。</string>
+    <string name="alert_password_empty">パスワードが空です。</string>
 
     <string name="longclick_menu_title">Action</string>
-    <string name="longclick_menu_open">開く</string>
-    <string name="longclick_menu_delete">削除</string>
-    <string name="longclick_menu_cancel">キャンセル</string>
-    <string name="longclick_menu_rename">リネーム</string>
-    <string name="longclick_menu_copy">コピー</string>
-    <string name="longclick_menu_move">移動</string>
-    <string name="longclick_menu_delete_confirm">ファイルを削除してもよいですか？</string>
-    
-    <string name="folder_name_input">フォルダー名入力</string>
-    <string name="file_name_input">ファイル名入力</string>
-    <string name="input_name_empty">名前が空です。</string>
-    <string name="done_rename_file">リネーム完了</string>
-    <string name="done_move_file">フィアル移動完了</string>
+    <string name="action_open">開く</string>
+    <string name="action_delete">削除</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_rename">リネーム</string>
+    <string name="action_copy">コピー</string>
+    <string name="action_move">移動</string>
+    <string name="alert_confirm_delete">ファイルを削除してもよいですか？</string>
+
+    <string name="title_folder_name">フォルダー名入力</string>
+    <string name="title_file_name">ファイル名入力</string>
+    <string name="alert_name_empty">名前が空です。</string>
+    <string name="toast_rename_file">リネーム完了</string>
+    <string name="toast_move_file">フィアル移動完了</string>
 
     <string name="error_file_cannot_copy">コピーできません。</string>
     <string name="error_file_cannot_read">ファイルを読み込めません。</string>
@@ -36,35 +35,33 @@
 
     <string name="alert_overwrite">ファイルを上書きしますか？</string>
     <string name="alert_close_modified_file">このメモは変更されています。保存しますか？</string>
-    
+
     <string name="alert_text_trancated">テキストの一部が削除されました。(サイズが大きすぎるかもしれません。)</string>
-    <string name="notify_file_save">保存しました。:</string>
+    <string name="toast_save">保存しました。:</string>
     <string name="alert_general_error">エラー</string>
     <string name="alert_cannot_openfile">ファイルを開けません。:</string>
     <string name="alert_initdir_is_not_exist">が存在しません。</string>
     <string name="notify_now_in_progress">処理中です…</string>
 
 
-    <string name="BottomMenu_updir">上へ</string>
-    <string name="BottomMenu_menu">メニュー</string>
-    <string name="BottomMenu_close">閉じる</string>
+    <string name="action_updir">上へ</string>
+    <string name="action_menu">メニュー</string>
 
-    <string name="alert_dialog_ok">OK</string>
-    <string name="alert_dialog_yes">はい</string>
-    <string name="alert_dialog_no">いいえ</string>
-    <string name="alert_dialog_cancel">キャンセル</string>
+    <string name="action_ok">OK</string>
+    <string name="action_yes">はい</string>
+    <string name="action_no">いいえ</string>
 
 
     <string name="category_common">共通</string>
-	<string name="category_dir">ファイルブラウザ</string>
-	<string name="category_edit">メモ閲覧</string>
+    <string name="category_dir">ファイルブラウザ</string>
+    <string name="category_edit">メモ閲覧</string>
 
     <string name="prefPWResetTimer">パスワードタイマー(分)</string>
     <string name="prefPWResetTimerSummary">分間</string>
 
     <string name="prefCharsetName">文字コード</string>
     <string name="prefCharsetNameSummary">文字コード</string>
-    
+
     <string name="prefShowButtons">下部のボタン表示</string>
     <string name="prefShowButtonsSummary">ボタン表示(上へ/メニュー,閉じる/メニュー)</string>
     <string name="prefShowButtonsSummaryOn">ボタン表示(上へ/メニュー,閉じる/メニュー)</string>
@@ -87,18 +84,16 @@
 
     <string name="prefNoTitleBar">タイトルバーなし</string>
     <string name="prefNoTitleBarSummary">タイトルバー表示をオフにします。</string>
- 
+
     <string name="prefFontSizeOnList">文字サイズ</string>
     <string name="prefFontSizeOnListSummary">文字サイズ</string>
     <string name="prefFontSizeOnListSampleText">サイズ(sp)</string>
 
 
-    <string name="util_error_file_already_exists">ファイル/フォルダは既に存在します。</string>
-    <string name="util_error_invalid_fileheader">ファイルはブローフィッシュ暗号化されていません</string>
-    <string name="util_error_invalid_filesize1">無効なデータ</string>
-    <string name="util_error_invalid_filesize2">無効なデータサイズ</string>
-    <string name="util_error_md5_check_sum_error">パスワードが正しくありません</string>
-    <string name="util_error_passdigest_is_null">パスワード入力エラー</string>
+    <string name="error_file_exists">ファイル/フォルダは既に存在します。</string>
+    <string name="error_invalid_chi">ファイルはブローフィッシュ暗号化されていません</string>
+    <string name="error_password">パスワードが正しくありません</string>
+    <string name="error_null_passdigest">パスワード入力エラー</string>
 
 </resources>
 
