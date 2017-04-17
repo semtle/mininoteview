@@ -3,52 +3,53 @@ package com.mininoteview.mod;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class SelectFileName extends ListActivity
 {
+	public static final String INTENT_DIRPATH = "DIRPATH";
+	public static final String INTENT_FILENAME = "FILENAME";
+	public static final String INTENT_ORG_FILENAME = "ORG_FILENAME";
+	public static final String INTENT_FILEPATH = "FILEPATH";
+	public static final String INTENT_FORMAT = "FORMAT";
+	public static final String INTENT_MODE = "MODE";
 
-	// インテント定数定義
-	public static final String INTENT_DIRPATH = "DIRPATH";        // ディレクトリパス名
-	public static final String INTENT_FILENAME = "FILENAME";    // ファイル名
-	public static final String INTENT_ORG_FILENAME = "ORG_FILENAME";    // ファイル名
-	public static final String INTENT_FILEPATH = "FILEPATH";    // フルパスファイル名
-	public static final String INTENT_ENCRYPT = "ENCRYPT";    // フルパスファイル名
-	public static final String INTENT_MODE = "MODE";            // モード
-	//	public static final String MODE_OPEN = "OPEN";				// モード：ファイルを開く
-	public static final String MODE_SAVE = "SAVE";                // モード：ファイルを保存
-	public static final String MODE_COPY = "COPY";                // モード：ファイルを開く
-	public static final String MODE_MOVE = "MOVE";                // モード：ファイルを開く
+	public static final String MODE_SAVE = "SAVE";
+	public static final String MODE_COPY = "COPY";
+	public static final String MODE_MOVE = "MOVE";
 
-	private static final int MODEID_NONE = 0;        // MODE ID：
-	private static final int MODEID_SAVE = 1;        // MODE ID：
-	private static final int MODEID_COPY = 2;        // MODE ID：
-	private static final int MODEID_MOVE = 3;        // MODE ID：
+	public static final String FORMAT_TXT = "txt";
+	public static final String FORMAT_CHI = "chi";
+	public static final String FORMAT_CHS = "chs";
+	public static final String FORMAT_DAT = "dat";
+
+	private static final int MODEID_NONE = 0;
+	private static final int MODEID_SAVE = 1;
+	private static final int MODEID_COPY = 2;
+	private static final int MODEID_MOVE = 3;
 	private int modeID = MODEID_NONE;
 
 
 	private String DirPath;
 	private String filename;
-	private boolean encryptFlag = false;
+	private String selectedFormat = FORMAT_TXT;
 	private List<String> items = null;
 
-	private boolean mExistEncryptCheckBox = true;
-
-	//private EditText mEdtFileName;
-	// キーイベント発生時、呼び出されます
 	private boolean mBackKeyDown = false;
 
 	@Override
@@ -65,14 +66,13 @@ public class SelectFileName extends ListActivity
 		btnCancel.setText(R.string.action_cancel);
 
 		TextView txtTitle = (TextView) findViewById(R.id.txtTitle);
-		CheckBox encryptCheck = (CheckBox) findViewById(R.id.encryptCheckBox);
+		final Spinner formatSpinner = (Spinner) findViewById(R.id.formatSpinner);
 
 
 		EditText mEdtFileName = (EditText) findViewById(R.id.edtFileName);
 
 
 		Bundle extras = getIntent().getExtras();
-		// タイトルの設定
 		if(extras != null)
 		{
 			filename = extras.getString(INTENT_FILEPATH);
@@ -80,7 +80,7 @@ public class SelectFileName extends ListActivity
 			DirPath = aFile.getParent();
 			if(DirPath == null || DirPath.equals(""))
 			{
-				DirPath = "/";
+				DirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 			}
 
 			mEdtFileName.setText(aFile.getName());
@@ -90,90 +90,77 @@ public class SelectFileName extends ListActivity
 			{
 				modeID = MODEID_SAVE;
 				txtTitle.setText(R.string.action_save_as);
-				encryptFlag = extras.getBoolean(INTENT_ENCRYPT);
-				encryptCheck.setChecked(encryptFlag);
 
+				// add entries to the spinner
+				List<String> list = new ArrayList<String>();
+				list.add(FORMAT_TXT);
+				list.add(FORMAT_CHI);
+				list.add(FORMAT_CHS);
+				list.add(FORMAT_DAT);
+				ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+						android.R.layout.simple_spinner_item, list);
+				dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				formatSpinner.setAdapter(dataAdapter);
+
+				selectedFormat = extras.getString(INTENT_FORMAT);
+				// set selected item of the spinner
+				for(int i = 0; i < formatSpinner.getCount(); i++)
+				{
+					if(formatSpinner.getItemAtPosition(i).equals(selectedFormat))
+					{
+						formatSpinner.setSelection(i);
+						break;
+					}
+				}
+
+				// change extention on spinner select
+				formatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+				{
+					@Override
+					public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
+					{
+						selectedFormat = parent.getItemAtPosition(pos).toString();
+						EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
+						String strFileName = edtFileName.getText().toString();
+
+						int sel_s = edtFileName.getSelectionStart();
+						int sel_e = edtFileName.getSelectionEnd();
+
+						edtFileName.setText(MyUtil.changeFileExt(strFileName, selectedFormat));
+
+						int l = strFileName.length();
+						if(sel_s > l) sel_s = l;
+						if(sel_e > l) sel_e = l;
+						edtFileName.setSelection(sel_s, sel_e);
+					}
+
+					@Override
+					public void onNothingSelected(AdapterView<?> arg0)
+					{
+						// stuff...
+					}
+				});
 			}
+
 			else if(extras.getString(INTENT_MODE).equals(MODE_COPY))
 			{
 				modeID = MODEID_COPY;
 				txtTitle.setText(R.string.action_copy);
 				ViewGroup selectFileLayout = (ViewGroup) findViewById(R.id.selectFile);
-				selectFileLayout.removeView(encryptCheck);
-				mExistEncryptCheckBox = false;
+				selectFileLayout.removeView(formatSpinner);
 			}
 			else if(extras.getString(INTENT_MODE).equals(MODE_MOVE))
 			{
 				modeID = MODEID_MOVE;
 				txtTitle.setText(R.string.action_move);
 				ViewGroup selectFileLayout = (ViewGroup) findViewById(R.id.selectFile);
-				selectFileLayout.removeView(encryptCheck);
-				mExistEncryptCheckBox = false;
+				selectFileLayout.removeView(formatSpinner);
 			}
 
 		}
-		//リスト構築
+
 		fillList();
 
-		// CheckBoxのクリックリスナー
-
-		encryptCheck.setOnClickListener(new View.OnClickListener()
-		{
-
-			//			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
-				String strFileName = edtFileName.getText().toString();
-
-				if(mExistEncryptCheckBox)
-				{
-					CheckBox encryptCheck = (CheckBox) findViewById(R.id.encryptCheckBox);
-
-					int sel_s = edtFileName.getSelectionStart();
-					int sel_e = edtFileName.getSelectionEnd();
-
-					if(encryptCheck.isChecked())
-					{
-						// チェックされた状態の時の処理を記述
-						int dot = strFileName.lastIndexOf('.');
-						if(dot >= 0)
-						{
-							strFileName = strFileName.substring(0, dot).concat(".chi");
-						}
-						else
-						{
-							strFileName = strFileName.concat(".chi");
-						}
-						edtFileName.setText(strFileName);
-
-					}
-					else
-					{
-						// チェックされていない状態の時の処理を記述
-						int dot = strFileName.lastIndexOf('.');
-						if(dot >= 0)
-						{
-							strFileName = strFileName.substring(0, dot).concat(".txt");
-						}
-						else
-						{
-							strFileName = strFileName.concat(".txt");
-						}
-						edtFileName.setText(strFileName);
-					}
-					//カーソルを元の位置にセット
-					int l = strFileName.length();
-					if(sel_s > l) sel_s = l;
-					if(sel_e > l) sel_e = l;
-					edtFileName.setSelection(sel_s, sel_e);
-
-				}
-			}
-		});
-
-		// OKボタンのクリックリスナー
 		btnOK.setOnClickListener(new View.OnClickListener()
 		{
 
@@ -182,24 +169,19 @@ public class SelectFileName extends ListActivity
 			{
 				Intent intent = new Intent();
 
-				// OKボタン押下の場合は、以下のインテントを設定
-				//  ファイル名/ディレクトリパス名/ファイルパス名
 				EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
-				String strFileName = edtFileName.getText().toString().replaceAll("[\\s]*$", "");//末尾の空白を削除
+				String strFileName = edtFileName.getText().toString().replaceAll("[\\s]*$", "");
 
-
-				if(mExistEncryptCheckBox)
-				{
-					CheckBox encryptCheck = (CheckBox) findViewById(R.id.encryptCheckBox);
-					encryptFlag = encryptCheck.isChecked();
-
-				}
 
 				intent.putExtra(INTENT_FILENAME, strFileName);
 				intent.putExtra(INTENT_DIRPATH, DirPath);
-				intent.putExtra(INTENT_ENCRYPT, encryptFlag);
 				intent.putExtra(INTENT_ORG_FILENAME, filename);
 
+				if(modeID == MODEID_SAVE)
+				{
+					selectedFormat = String.valueOf(formatSpinner.getSelectedItem());
+					intent.putExtra(INTENT_FORMAT, selectedFormat);
+				}
 
 				String strFilePath;
 				if(DirPath.equals("/"))
@@ -211,21 +193,18 @@ public class SelectFileName extends ListActivity
 					strFilePath = DirPath + "/" + strFileName;
 				}
 				intent.putExtra(INTENT_FILEPATH, strFilePath);
-				// 処理結果を設定
 				setResult(RESULT_OK, intent);
 				finish();
 			}
 
 		});
 
-		// Cancelボタンのクリックリスナー
 		btnCancel.setOnClickListener(new View.OnClickListener()
 		{
 			//		@Override
 			public void onClick(View v)
 			{
 				Intent intent = new Intent();
-				// 処理結果を設定
 				setResult(RESULT_CANCELED, intent);
 				finish();
 			}
@@ -233,69 +212,45 @@ public class SelectFileName extends ListActivity
 
 		if(modeID == MODEID_SAVE)
 		{
-			mEdtFileName.requestFocus();//ファイル名にフォーカス
+			mEdtFileName.requestFocus();
 		}
 
 		int i = mEdtFileName.getText().toString().lastIndexOf('.');
 		if(i > -1) mEdtFileName.setSelection(i);//拡張子の前にカーソルをおく
-
-		/*doesn't work. maybe listview is needed focusable.
-		//if Focus Change
-		mEdtFileName.setOnFocusChangeListener(new View.OnFocusChangeListener(){
-
-    		//@Override
-    		public void onFocusChange(View v, boolean flag){
-    			if(flag == false){
-    				InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-    				imm.hideSoftInputFromWindow(v.getWindowToken(),0);
-    			}
-    			Toast.makeText(getApplication(), "Focus changed.", Toast.LENGTH_SHORT).show();
-    		}
-    	});
-		*/
 	}
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id)
 	{
 		super.onListItemClick(l, v, position, id);
-		// リストアダプタから現在選択中のファイル名／ディレクトリ名を取得
 		String strItem = (String) getListAdapter().getItem(position);
 
 		if(strItem.equals(".."))
 		{
-			// ディレクトリを1階層上がる場合
 			upOneLevel();
-			/*
-			if( DirPath.lastIndexOf("/") <= 0 ) {
-				// ルートから1階層目の場合
-				DirPath = DirPath.substring(0, DirPath.lastIndexOf("/") + 1 );
-			} else {
-				// ルートから2階層目以上の場合
-				DirPath = DirPath.substring(0, DirPath.lastIndexOf("/"));
-			}
-			fillList();
-			*/
 		}
 		else if(strItem.startsWith("/"))
 		{
-			// ディレクトリに入る場合
+			String newPath;
 			if(DirPath.equals("/"))
 			{
-				//ルートの場合
-				DirPath = strItem;
+				newPath = strItem;
 			}
 			else
 			{
-				//ルートから1階層目以上の場合
-				DirPath = DirPath + strItem;
+				newPath = DirPath + strItem;
 			}
-			//DirPath = DirPath.substring(0, DirPath.length() - 1 );
+			File[] files = (new File(newPath)).listFiles();
+			if(files == null)
+			{
+				Toast.makeText(this, "Unable Access...", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			DirPath = newPath;
 			fillList();
 		}
 		else
 		{
-			// ファイルの場合はエディットテキストに設定
 			EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
 			edtFileName.setText(strItem);
 		}
@@ -304,100 +259,37 @@ public class SelectFileName extends ListActivity
 
 	private void upOneLevel()
 	{
-		//String previousFileName = new File(DirPath).getName() + "/";
-
-
-		// ディレクトリを1階層上がる場合
 		if(DirPath.lastIndexOf("/") <= 0)
 		{
-			// ルートから1階層目の場合
 			DirPath = DirPath.substring(0, DirPath.lastIndexOf("/") + 1);
 		}
 		else
 		{
-			// ルートから2階層目以上の場合
 			DirPath = DirPath.substring(0, DirPath.lastIndexOf("/"));
 		}
-
-
 		fillList();
-
-		/*
-		//カーソル参照していたフォルダの場所に合わせる。
-		int position = 0;
-		for (String s : this.items) {
-			//System.out.println(s);
-			if(previousFileName.equals(s)){
-				this.setSelection(position);
-				break;
-			}
-			position++;
-		}
-		*/
 	}
 
-	// ファイルリスト構築
 	private void fillList()
 	{
-		File[] files = new File(DirPath).listFiles();
-		if(files == null)
-		{
-			Toast.makeText(this, "Unable Access...",
-					Toast.LENGTH_SHORT).show();
-//			System.out.println("DirPath=" + DirPath);
+		List<String> fnamelist = MyUtil.fillList(DirPath);
 
-			return;
-		}
-
-		// カレントディレクトリ名をTextViewに設定
 		TextView txtDirName = (TextView) findViewById(R.id.txtDirName);
 		txtDirName.setText(DirPath);
-
-//		System.out.println("DirPath=" + DirPath);
-//		System.out.println("FilePath=" + filename);
 
 		if(items != null)
 		{
 			items.clear();
 		}
-		items = new ArrayList<String>();
-
-		// ルートじゃない場合は、階層を上がれるように".."をArrayListの先頭に設定
-		if(!DirPath.equals("/"))
-		{
-			items.add("..");
-		}
-
-		for(File file : files)
-		{
-			String pname = (file.isDirectory() ? "/" : "") + file.getName();
-			items.add(pname);
-		}
+		items = fnamelist;
 
 		FileListAdapter fileList = new FileListAdapter(this, this.items);
-
-
-		//昇順で並べるようにする。
-		fileList.sort(new Comparator<String>()
-		{
-			public int compare(String object1, String object2)
-			{
-				return MyUtil.folderFirstCompare(object1, object2, 1);
-			}
-		});
-
-
 		setListAdapter(fileList);
 	}
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event)
 	{
-
-		//if(mEdtFileName.hasFocus()){
-		//	return super.dispatchKeyEvent(event);
-		//}
-		//リスト以外のところにフォーカスがあればそのままreturn
 		if(!getListView().hasFocus())
 		{
 			return super.dispatchKeyEvent(event);
@@ -407,29 +299,17 @@ public class SelectFileName extends ListActivity
 		{
 			switch(event.getKeyCode())
 			{
-				case KeyEvent.KEYCODE_DEL: // DELキー
-//            	upOneLevel();//up dir
+				case KeyEvent.KEYCODE_DEL:
 					return true;
 
 				case KeyEvent.KEYCODE_BACK:
-//    			Log.v("KeyEvent","KEYCODE_BACK,DOWN");
-
-            	/*
-				if(!showBottomBarFlag){//back keyは無視するACTION_UPの時に処理をする。
-    				mBackKeyDown = true;
-    				return true;
-    			}
-    			*/
-
 					break;
 
-
-				case KeyEvent.KEYCODE_DPAD_LEFT: // 左キー
-					upOneLevel();//up dir
+				case KeyEvent.KEYCODE_DPAD_LEFT:
+					upOneLevel();
 					return true;
-				case KeyEvent.KEYCODE_DPAD_RIGHT: // 左キー
-					//upOneLevel();//up dir
-					//ToDo
+
+				case KeyEvent.KEYCODE_DPAD_RIGHT:
 					KeyEvent e = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER);
 					return super.dispatchKeyEvent(e);
 
@@ -440,30 +320,17 @@ public class SelectFileName extends ListActivity
 		}
 
 		if(event.getAction() == KeyEvent.ACTION_UP)
-		{ // キーが離された時
+		{
 			switch(event.getKeyCode())
 			{
-				case KeyEvent.KEYCODE_DEL: // DELキー
-					upOneLevel();//up dir
+				case KeyEvent.KEYCODE_DEL:
+					upOneLevel();
 					return true;
-				case KeyEvent.KEYCODE_BACK: // BACK KEY
 
-//    			Log.v("KeyEvent","KEYCODE_BACK,UP");
+				case KeyEvent.KEYCODE_BACK:
 					if(mBackKeyDown)
 					{
-						mBackKeyDown = false;//戻しておく
-					/*
-					if(!showBottomBarFlag){// 下部ボタンがないときは戻るボタンがup dirの機能となる
-            			if(this.currentDirectory.getParent() == null
-            					|| this.currentDirectory.toString().equals(mInitDirName) ){
-            				PasswordBox.resetPassword();
-            				finish();
-            			}else{
-            				upOneLevel();//up dir
-            			}
-            			return true;
-            		}
-            		*/
+						mBackKeyDown = false;
 					}
 					else
 					{
@@ -471,9 +338,7 @@ public class SelectFileName extends ListActivity
 					}
 					break;
 
-				case KeyEvent.KEYCODE_DPAD_RIGHT: // 左キー
-					//upOneLevel();//up dir
-					//ToDo
+				case KeyEvent.KEYCODE_DPAD_RIGHT:
 					KeyEvent e = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER);
 					return super.dispatchKeyEvent(e);
 

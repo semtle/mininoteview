@@ -19,7 +19,6 @@ class Config
 	//Note View
 	private static String charsetName = "utf-8";
 	private static String lineBreak = "auto";
-	private static Boolean autoSaveFlag = false;
 	private static Boolean noTitleBarFlag = false;
 	private static float fontSize = 18;
 	private static String typeface = "DEFAULT";
@@ -47,11 +46,6 @@ class Config
 	static float getFontSize()
 	{
 		return fontSize;
-	}
-
-	static Boolean getAutoSaveFlag()
-	{
-		return autoSaveFlag;
 	}
 
 	static String getTypeface()
@@ -84,8 +78,6 @@ class Config
 		//initDirName = sharedPreferences.getString(context.getString(R.string.prefInitDirKey), initDirName);
 
 		fileListOrder = sharedPreferences.getInt(context.getString(R.string.prefFileListOrderKey), fileListOrder);
-
-		autoSaveFlag = sharedPreferences.getBoolean(context.getString(R.string.prefAutoSaveKey), autoSaveFlag);
 
 		typeface = sharedPreferences.getString(context.getString(R.string.prefTypefaceKey), typeface);
 

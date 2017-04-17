@@ -11,8 +11,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,6 +29,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 class MyUtil
 {
+	private static final int MAXFILESIZE = 0x400000;
+	private static final String CHIHEADER = "BF01";
+	private static final String CHSHEADER = "BF0S";
+
 	static int folderFirstCompare(String object1, String object2, int sortorder)
 	{
 		if(object1.equals(".."))
@@ -36,7 +43,7 @@ class MyUtil
 		boolean obj2isDir = object2.startsWith("/");
 		if(obj1isDir == obj2isDir)
 		{
-			return object1.compareTo(object2) * sortorder;
+			return object1.compareToIgnoreCase(object2) * sortorder;
 		}
 		else if(obj1isDir)
 		{
@@ -46,6 +53,22 @@ class MyUtil
 		{
 			return sortorder;
 		}
+	}
+
+	static String changeFileExt(String fname, String ext)
+	{
+		int dot = fname.lastIndexOf('.');
+		String res;
+		if(dot >= 0)
+		{
+			res = fname.substring(0, dot);
+		}
+		else
+		{
+			res = fname;
+		}
+
+		return res + "." + ext;
 	}
 
 	static String upOneLevel(String DirPath)
@@ -129,34 +152,6 @@ class MyUtil
 		}
 	}
 
-	static boolean isChiFile(File aFile)
-	{
-		if(!aFile.exists() || (aFile.length() < 32) || (aFile.length() % 8 != 0))
-			return false;
-		byte[] buff = new byte[4];
-		try
-		{
-			FileInputStream f_ins = new FileInputStream(aFile);
-			f_ins.read(buff, 0, 4);
-			f_ins.close();
-			String BFHeader = new String(buff, 0, 4);
-			return BFHeader.equals("BF01");
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-	}
-
-	static boolean isChiData(byte[] data)
-	{
-		if(data == null || (data.length < 32) || (data.length % 8 != 0))
-			return false;
-		String BFHeader = new String(data, 0, 4);
-		return BFHeader.equals("BF01");
-	}
-
-	// テキストファイル書込処理
 	static void writeTextFile(String strFilePath, byte[] text) throws Exception
 	{
 		BufferedOutputStream bw = null;
@@ -184,177 +179,321 @@ class MyUtil
 		}
 	}
 
+	//////////////////////////////////////////////////
+//		 Tombo Chi file format
+//		 0: header (4 bytes) must equal "BF01"
+//		 4: size (4 bytes) unsigned int (LE)
+//		START ENCRYPT
+//		 8*: random (8 bytes)
+//		16*: md5sum (16 bytes) of text
+//		32*: text (size bytes)
+// 		END
+// 		*Encrypted with key = md5(password) & iv = 0
 
-	static byte[] decrypt(byte[] data, byte[] passDigest) throws Exception
+	// return size if valid, -1 otherwise
+	static int getChiSize(byte[] data)
+	{
+		if(data == null || (data.length < 32) || (data.length % 8 != 0))
+			return -1;
+		String header = new String(data, 0, 4);
+		if(!header.equals(CHIHEADER))
+			return -1;
+		int size = ByteBuffer.wrap(data, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
+		long k = size & 0xFFFFFFFFL;
+		if(k < 0 || k > MAXFILESIZE) // 4 MiB limit
+			return -1;
+		return size;
+	}
+
+	static int getChiSize(File aFile)
+	{
+		if(!aFile.exists() || (aFile.length() < 32) || (aFile.length() % 8 != 0))
+			return -1;
+		byte[] data = new byte[8];
+		try
+		{
+			FileInputStream f_ins = new FileInputStream(aFile);
+			f_ins.read(data, 0, 8);
+			f_ins.close();
+			String header = new String(data, 0, 4);
+			if(!header.equals(CHIHEADER))
+				return -1;
+			int size = ByteBuffer.wrap(data, 4, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
+			long k = size & 0xFFFFFFFFL;
+			if(k < 0 || k > MAXFILESIZE) // 4 MiB limit
+				return -1;
+			return size;
+		}
+		catch(Exception e)
+		{
+			return -1;
+		}
+	}
+
+	private static int bfcrypt(byte[] in, int inOffset, byte[] out, int outOffset, int size, byte[] pass, byte[] iv, int mode)
+	{
+		if(iv == null)
+			iv = new byte[8];
+		SecretKeySpec key = new SecretKeySpec(pass, "Blowfish");
+		IvParameterSpec ivps = new IvParameterSpec(iv);
+		try
+		{
+			Cipher cbfish = Cipher.getInstance("BLOWFISH/CBC/NoPadding");
+			cbfish.init(mode, key, ivps);
+			return cbfish.doFinal(in, inOffset, size, out, outOffset);
+		}
+		catch(Exception e)
+		{
+			return -1;
+		}
+	}
+
+	// in-place (en|de)crption
+	private static int bfencrypt(byte[] data, int dataOffset, int size, byte[] pass)
+	{
+		return bfcrypt(data, dataOffset, data, dataOffset, size, pass, null, Cipher.ENCRYPT_MODE);
+	}
+
+	private static int bfdecrypt(byte[] data, int dataOffset, int size, byte[] pass)
+	{
+		return bfcrypt(data, dataOffset, data, dataOffset, size, pass, null, Cipher.DECRYPT_MODE);
+	}
+
+	private static int bfencrypt(byte[] data, int dataOffset, int size, byte[] pass, byte[] iv)
+	{
+		return bfcrypt(data, dataOffset, data, dataOffset, size, pass, iv, Cipher.ENCRYPT_MODE);
+	}
+
+	private static int bfdecrypt(byte[] data, int dataOffset, int size, byte[] pass, byte[] iv)
+	{
+		return bfcrypt(data, dataOffset, data, dataOffset, size, pass, iv, Cipher.DECRYPT_MODE);
+	}
+
+	static byte[] decryptChiData(byte[] data, byte[] passDigest) throws MyUtilException
 	{
 
 		int length = data.length;
 
-		/*
-		if(length - 32 < 0)
-			throw new MyUtilException(R.string.util_error_invalid_filesize1, "Invalid file");
-		if(length % 8 != 0)
-			throw new MyUtilException(R.string.util_error_invalid_filesize2, "Invalid file size (not mutiples of 8)");
-
-
-		String BFHeader = new String(data, 0, 4);
-		if(!BFHeader.equals("BF01"))
-			throw new MyUtilException(R.string.util_error_invalid_fileheader, "This File is NOT BF01");
-		*/
-		if(!isChiData(data))
-			throw new MyUtilException(R.string.error_invalid_chi, "Not a valid chi file");
-
-		int BFSize = 0;
-		int k = 1;
-		for(int i = 4; i < 8; i++)
-		{
-			int size = data[i];
-			if(size < 0)
-				size = 256 + size;
-
-			BFSize = BFSize + size * k;
-			k = k * 256;
-		}
+		int size = getChiSize(data);
+		if(size < 0)
+			throw new MyUtilException(R.string.error_invalid_chi, "not a valid chi file");
 
 		if(passDigest == null)
 			throw new MyUtilException(R.string.error_null_passdigest, "password input error");
 
+		int ret = bfdecrypt(data, 8, length - 8, passDigest);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
 
-//////////////////////////////////////////////////
-//		 CryptManagerによる暗号化ファイルのフォーマット
-//		 The format of the container is:
-//		 0-3  : BF01(4 bytes)
-//		 4-7  : data length (include randum area + md5sum)(4 bytes)
-//		 8-15 :* random data(8 bytes)
-//		16-31 :* md5sum of plain text(16 bytes)
-//		32-   :* data
+		byte[] includedMD5 = new byte[16];
+		System.arraycopy(data, 16, includedMD5, 0, 16);
 
+		byte[] computedMD5;
+		try
+		{
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			md5.update(data, 32, size);
+			computedMD5 = md5.digest();
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			throw new MyUtilException(R.string.error_unsupported, e.toString());
+		}
 
-		byte[] dec = new byte[length - 8];
-		byte[] iv = new byte[8];
-
-		SecretKeySpec key = new SecretKeySpec(passDigest, "Blowfish");
-		IvParameterSpec ivps = new IvParameterSpec(iv);
-		Cipher cbfish = Cipher.getInstance("BLOWFISH/CBC/NoPadding");
-		cbfish.init(Cipher.DECRYPT_MODE, key, ivps);
-		cbfish.doFinal(data, 8, length - 8, dec, 0);
-
-		byte[] orgMd5 = new byte[16];
-		System.arraycopy(dec, 8, orgMd5, 0, 16);
-
-		MessageDigest md5 = MessageDigest.getInstance("MD5");
-		md5.update(dec, 24, BFSize);
-		byte[] dataMd5 = md5.digest();
-
-		if(!MessageDigest.isEqual(orgMd5, dataMd5))
+		if(!MessageDigest.isEqual(includedMD5, computedMD5))
 		{
 			throw new MyUtilException(R.string.error_password, "Password is not correct.");
 		}
 
-		byte[] dec_data = new byte[BFSize];//return用buffer
-		System.arraycopy(dec, 24, dec_data, 0, BFSize);
+		byte[] dec_data = new byte[size];
+		System.arraycopy(data, 32, dec_data, 0, size);
 
 		return dec_data;
 	}
 
 
-	static byte[] encrypt(byte[] data, byte[] passDigest) throws Exception
+	static byte[] encryptChiData(byte[] data, byte[] passDigest) throws MyUtilException
 	{
-
-
-		int enc_size;
-		if(data.length % 8 == 0)
+		int size = data.length; // data size
+		int length = 32 + data.length; // file length
+		if(length % 8 != 0)
 		{
-			enc_size = data.length + 32;
-		}
-		else
-		{
-			enc_size = (data.length / 8 + 1) * 8 + 32; //8の倍数＋32ヘッダサイズ
+			// bf operates on blocks of 8 bytes
+			length += 8 - (length % 8);
 		}
 
-		byte[] savedata = new byte[enc_size];
+		byte[] savedata = new byte[length];
 
+		// 0: header (4 bytes)
+		System.arraycopy(CHIHEADER.getBytes(), 0, savedata, 0, 4);
 
-//////////////////////////////////////////////////
-//		 CryptManagerによる暗号化ファイルのフォーマット
-//		 The format of the container is:
-//		 0-3  : BF01(4 bytes)
-//		 4-7  : data length (include randum area + md5sum)(4 bytes)
-//		 8-15 :* random data(8 bytes)
-//		16-31 :* md5sum of plain text(16 bytes)
-//		32-   :* data
+		if(length < 0 || length > MAXFILESIZE)
+			throw new MyUtilException(R.string.error_file_toobig, "file is too big");
 
+		byte[] size_ba = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(size).array();
+		// 4: size (4 bytes) unsigned! int (LE)
+		System.arraycopy(size_ba, 0, savedata, 4, 4);
 
-//		 0-3  : BF01(4 bytes)
-		System.arraycopy("BF01".getBytes(), 0, savedata, 0, 4);
-
-
-//		 4-7  : data length (include randum area + md5sum)(4 bytes)
-
-		int l = data.length;
-		savedata[7] = (byte) ((l >>> 24) & 0xFF);
-		savedata[6] = (byte) ((l >>> 16) & 0xFF);
-		savedata[5] = (byte) ((l >>> 8) & 0xFF);
-		savedata[4] = (byte) ((l) & 0xFF);
-
-
-		// データ部からdigestを計算
-		//MD5 md5 = new MD5();
-		MessageDigest md5 = MessageDigest.getInstance("MD5");
-		md5.update(data, 0, data.length);
-		byte[] dataMd5 = md5.digest();
-
-		byte[] tmpdata = new byte[enc_size - 8];//最初の8byteを除く部分のbuffer
-
-
-		System.arraycopy(dataMd5, 0, tmpdata, 8, 16);//md5を格納　16-31(tmpdataの8から)
-		System.arraycopy(data, 0, tmpdata, 24, data.length);
-
-//		printHex(tmpdata,tmpdata.length);
-//		System.out.println("=======================");
-
-//		 8-15 :* random data(8 bytes)
+		// 8*: random (8 bytes)
 		Random rand = new Random();
-		for(int i = 0; i < 8; i++)
+		for(int i = 8; i < 16; i++)
 		{
-			tmpdata[i] = (byte) rand.nextInt(256);
+			savedata[i] = (byte) rand.nextInt(256);
 		}
 
+		byte[] dataMd5;
+		try
+		{
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			md5.update(data, 0, size);
+			dataMd5 = md5.digest();
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			throw new MyUtilException(R.string.error_unsupported, e.toString());
+		}
+		// 16*: md5 (16 bytes)
+		System.arraycopy(dataMd5, 0, savedata, 16, 16);
 
-		//byte[] dec = new byte[length - 8];
-		byte[] iv = new byte[8];
+		// 32*: text (size bytes)
+		System.arraycopy(data, 0, savedata, 32, size);
 
-		SecretKeySpec key = new SecretKeySpec(passDigest, "Blowfish");
-		IvParameterSpec ivps = new IvParameterSpec(iv);
-		Cipher cbfish = Cipher.getInstance("BLOWFISH/CBC/NoPadding");
-		cbfish.init(Cipher.ENCRYPT_MODE, key, ivps);
-		cbfish.doFinal(tmpdata, 0, tmpdata.length, savedata, 8);
+		int ret = bfencrypt(savedata, 8, length - 8, passDigest);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
+
 		return savedata;
 	}
 
+	static byte[] decryptChsData(byte[] data, byte[] passDigest) throws MyUtilException
+	{
 
-	// ディレクトリ作成処理
+		int length = data.length;
+
+		int size = getChiSize(data);
+		if(size < 0)
+			throw new MyUtilException(R.string.error_invalid_chi, "not a valid chi file");
+
+		if(passDigest == null)
+			throw new MyUtilException(R.string.error_null_passdigest, "password input error");
+
+
+		int ret = bfdecrypt(data, 8, 8, passDigest);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
+
+		byte[] iv = new byte[8];
+		System.arraycopy(data, 8, iv, 0, 8);
+		ret = bfdecrypt(data, 16, length - 16, passDigest, iv);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
+
+		byte[] includedMD5 = new byte[16];
+		System.arraycopy(data, 16, includedMD5, 0, 16);
+
+		byte[] computedMD5;
+		try
+		{
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			md5.update(data, 32, size);
+			computedMD5 = md5.digest();
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			throw new MyUtilException(R.string.error_unsupported, e.toString());
+		}
+
+		if(!MessageDigest.isEqual(includedMD5, computedMD5))
+		{
+			throw new MyUtilException(R.string.error_password, "Password is not correct.");
+		}
+
+		byte[] dec_data = new byte[size];
+		System.arraycopy(data, 32, dec_data, 0, size);
+
+		return dec_data;
+	}
+
+
+	static byte[] encryptChsData(byte[] data, byte[] passDigest) throws MyUtilException
+	{
+		int size = data.length; // data size
+		int length = 32 + data.length; // file length
+		if(length % 8 != 0)
+		{
+			// bf operates on blocks of 8 bytes
+			length += 8 - (length % 8);
+		}
+
+		byte[] savedata = new byte[length];
+
+		// 0: header (4 bytes)
+		System.arraycopy(CHSHEADER.getBytes(), 0, savedata, 0, 4);
+
+		if(length < 0 || length > MAXFILESIZE)
+			throw new MyUtilException(R.string.error_file_toobig, "file is too big");
+
+		byte[] size_ba = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(size).array();
+		// 4: size (4 bytes) unsigned! int (LE)
+		System.arraycopy(size_ba, 0, savedata, 4, 4);
+
+		// 8*: iv (8 bytes)
+
+		byte[] iv = new byte[8];
+		Random rand = new Random();
+		for(int i = 0; i < 8; i++)
+		{
+			iv[i] = (byte) rand.nextInt(256);
+		}
+
+		System.arraycopy(iv, 0, savedata, 8, 8);
+		int ret = bfencrypt(savedata, 8, 8, passDigest);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
+
+
+		byte[] dataMd5;
+		try
+		{
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			md5.update(data, 0, size);
+			dataMd5 = md5.digest();
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			throw new MyUtilException(R.string.error_unsupported, e.toString());
+		}
+		// 16*: md5 (16 bytes)
+		System.arraycopy(dataMd5, 0, savedata, 16, 16);
+
+		// 32*: text (size bytes)
+		System.arraycopy(data, 0, savedata, 32, size);
+
+		ret = bfencrypt(savedata, 16, length - 16, passDigest, iv);
+		if(ret < 0)
+			throw new MyUtilException(R.string.error_blowfish, "error decrypting/encrypting");
+
+		return savedata;
+	}
+
 	static boolean createDir(File dir) throws Exception
 	{
 		if(dir.exists())
 		{
-//				throw new IOException("Folder/File already exists.");
 			throw new MyUtilException(R.string.error_file_exists, "Folder/File already exists.");
 		}
 		else
 		{
-			return dir.mkdirs();    //make folders
+			return dir.mkdirs();
 		}
 
 
 	}
 
-	// ファイル名変更処理
 	static boolean renameFile(File srcFile, File dstFile) throws Exception
 	{
 		if(dstFile.exists())
 		{
-//				throw new IOException("Folder/File already exists: " + dstFile.getName());
 			throw new MyUtilException(R.string.error_file_exists, "Folder/File already exists.");
 		}
 		else
@@ -365,8 +504,6 @@ class MyUtil
 
 	}
 
-
-	// file copy using NIO Channel
 	static void fileCopy(File source, File target) throws Exception
 	{
 		FileChannel in = null;
@@ -422,7 +559,6 @@ class MyUtil
 				.setMessage(msg)
 				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
-					// この中に"OK"時の処理をいれる。
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
 					}

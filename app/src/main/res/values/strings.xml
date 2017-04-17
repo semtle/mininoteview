@@ -13,6 +13,7 @@
     <string name="action_save_as">Save As…</string>
     <string name="action_preferences">Preferences</string>
     <string name="action_new_folder">New Folder</string>
+    <string name="action_new_file">New File</string>
 
     <string name="action_ok">OK</string>
     <string name="action_yes">Yes</string>
@@ -29,7 +30,6 @@
     <string name="action_menu">Menu</string>
 
     <string name="title_password">Password:</string>
-    <string name="title_encrypt">Encrypt</string>
     <string name="title_folder_name">Folder Name:</string>
     <string name="title_file_name">File Name:</string>
 
@@ -45,7 +45,6 @@
     <string name="alert_name_empty">Name is empty.</string>
 
     <string name="notify_now_in_progress">Now in progress…</string>
-    <string name="notify_opening">File Opening…</string>
     <string name="notify_saving">File Saving…</string>
 
     <string name="toast_rename_file">File renamed.</string>
@@ -91,10 +90,6 @@
     <string name="prefLineBreakCode">Line Break Character</string>
     <string name="prefLineBreakCodeSummary">Line Break Character</string>
 
-    <string name="prefAutoSaveKey" translatable="false">prefAutoSave</string>
-    <string name="prefAutoSave">Auto Save Mode</string>
-    <string name="prefAutoSaveSummary">Automatically save file.(save at closing and at going to background.)</string>
-
     <string name="prefTypefaceKey" translatable="false">prefTypeface</string>
     <string name="prefTypeface">Font Style</string>
     <string name="prefTypefaceSummary">default/monospace/sans serif/serif</string>
@@ -111,5 +106,8 @@
     <string name="prefFontSizeOnList">Text Size</string>
     <string name="prefFontSizeOnListSummary">Text Size</string>
     <string name="prefFontSizeOnListSampleText">Size(sp)</string>
+    <string name="error_file_toobig">The file is too big</string>
+    <string name="error_blowfish">error decrypting/encrypting</string>
+    <string name="error_unsupported">unsupported algorithm</string>
 </resources>
 

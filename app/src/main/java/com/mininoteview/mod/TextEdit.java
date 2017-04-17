@@ -43,12 +43,13 @@ public class TextEdit extends Activity
 	public static final int LINEBREAK_CRLF = 1;
 	public static final int LINEBREAK_LF = 2;
 	public static final int LINEBREAK_CR = 3;
-	// ------------------------------
-	// 定数定義
-	// ------------------------------
-	private static final int MENUID_CLOSE = Menu.FIRST + 1;
-	private static final int MENUID_SAVE = Menu.FIRST + 2;
-	private static final int MENUID_SAVE_AS = Menu.FIRST + 3;
+
+	private static final int MENUID_CLOSE = 0;
+	private static final int MENUID_SAVE = 1;
+	private static final int MENUID_SAVE_AS = 2;
+	private static final int MENUID_SETTINGS = 3;
+	private static final int MENUID_TOTAL = 4;
+
 
 	private static final int SHOW_FILELIST_OPEN = 0;
 	private static final int SHOW_FILELIST_SAVE = SHOW_FILELIST_OPEN + 1;
@@ -56,7 +57,7 @@ public class TextEdit extends Activity
 
 	private String filepath = Environment.getExternalStorageDirectory().getAbsolutePath();
 	private File aFile;
-	private boolean isEncrypt = false;
+	private String fileFormat = SelectFileName.FORMAT_TXT;
 	//for title bar
 	private String mAppName = "";
 	private int selStart = 0;
@@ -75,8 +76,6 @@ public class TextEdit extends Activity
 	private Typeface mTypeface = Typeface.DEFAULT;
 	private boolean showBottomBarFlag = true;
 	private float fontSize = 18;
-	private boolean autoSaveFlag = false;
-	private boolean onPauseBeforeSelectSaveFile = false;
 	private boolean closeAfterSaveFlag = false;
 
 	final Runnable run_file_acc_err = new Runnable()
@@ -96,14 +95,10 @@ public class TextEdit extends Activity
 	{
 		public void run()
 		{
-			// ファイル処理終了後の処理を記述
 			progressDlg.dismiss();
 
-			//header check
-			//String BFHeader = "";
-			//if(binText.length >= 4) BFHeader = new String(binText, 0, 4);
-			if(MyUtil.isChiData(binText) && !filepath.endsWith(".txt"))
-			{//This File is BF01
+			if(MyUtil.getChiSize(binText) >= 0 && !filepath.endsWith(".txt"))
+			{
 				if(PasswordBox.getPassDigest() == null)
 				{
 					getPasswordAndDecryptData();
@@ -144,7 +139,6 @@ public class TextEdit extends Activity
 
 			progressDlg.dismiss();
 			int duration = Toast.LENGTH_LONG;
-			if(autoSaveFlag) duration = Toast.LENGTH_SHORT;
 			Toast.makeText(TextEdit.this, getString(R.string.toast_save) + ": " + s, duration).show();
 
 
@@ -269,9 +263,6 @@ public class TextEdit extends Activity
 		//intentでファイルパスを渡されなかったときの為にinitDirをfilepathにセット
 		filepath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-		//autoSaveFlagセット
-		autoSaveFlag = sharedPreferences.getBoolean(getString(R.string.prefAutoSaveKey), false);
-
 		//typefaceセット
 		String typefaceString = sharedPreferences.getString(getString(R.string.prefTypefaceKey), "DEFAULT");
 		if(typefaceString.equalsIgnoreCase("DEFAULT"))
@@ -325,8 +316,7 @@ public class TextEdit extends Activity
 			//		@Override
 			public void onClick(View v)
 			{
-				//ボタンを押したときの動作
-				openOptionsMenu();
+				myOpenMenu();
 			}
 
 		});
@@ -408,53 +398,46 @@ public class TextEdit extends Activity
 		onScrollFlag = flag;
 	}
 
-	// create Menu
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
+	protected void myOpenMenu()
 	{
-		super.onCreateOptionsMenu(menu);
+		CharSequence[] items = new CharSequence[MENUID_TOTAL];
+		items[MENUID_CLOSE] = getText(R.string.action_close);
+		items[MENUID_SAVE] = getText(R.string.action_save);
+		items[MENUID_SAVE_AS] = getText(R.string.action_save_as);
+		items[MENUID_SETTINGS] = getText(R.string.action_preferences);
 
-		menu.add(0, MENUID_CLOSE, 0, R.string.action_close)
-				.setShortcut('0', 'c')
-				.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.longclick_menu_title)
+				.setItems(items, new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface dialog, int item)
+					{
+						switch(item)
+						{
 
-		menu.add(0, MENUID_SAVE, 0, R.string.action_save)
-				.setShortcut('1', 's')
-				.setIcon(android.R.drawable.ic_menu_save);
+							case MENUID_CLOSE: // close
+								closeFile();
+								break;
 
-		menu.add(0, MENUID_SAVE_AS, 0, R.string.action_save_as)
-				.setShortcut('2', 'a')
-				.setIcon(android.R.drawable.ic_menu_save);
+							case MENUID_SAVE: // save
+								saveFile();
+								break;
 
-		return true;
-	}
+							case MENUID_SAVE_AS: // save as
+								saveFileAsNewFile();
+								break;
 
-	// メニュー押下時のイベント処理
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item)
-	{
-		super.onMenuItemSelected(featureId, item);
+							case MENUID_SETTINGS: // settings
+								//Intent intent1 = new Intent(TextEdit.this, Settings.class);
+								//startActivityForResult(intent1, SHOW_SETTINGS);
+								break;
 
-		switch(item.getItemId())
-		{
-
-			case MENUID_CLOSE:        // 終了
-				closeFile();
-				break;
-
-
-			case MENUID_SAVE:        // ファイル保存
-				saveFile();
-				break;
-
-			case MENUID_SAVE_AS:    //名前を付けてファイル保存
-				saveFileAsNewFile();
-				break;
-
-			default:
-				break;
-		}
-		return true;
+							default:
+								break;
+						}
+					}
+				})
+				.show();
 	}
 
 	// FileListアクティビティからの戻り
@@ -464,6 +447,7 @@ public class TextEdit extends Activity
 		ignoreOnResume = true;//onResumeでの処理を無視するためのフラグセット
 		switch(requestCode)
 		{
+			/*
 			case SHOW_FILELIST_OPEN:    // ファイルオープン
 				if(resultCode == RESULT_OK)
 				{
@@ -471,19 +455,20 @@ public class TextEdit extends Activity
 					aFile = new File(filepath);
 //				TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 					setTitleBarText(aFile.getName());
-					isEncrypt = data.getBooleanExtra(SelectFileName.INTENT_ENCRYPT, isEncrypt);
+					fileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
 
 					progressDlg = ProgressDialog.show(
 							TextEdit.this, null, getString(R.string.notify_opening), true, false);
 					new FileReadThread().start();
 				}
 				break;
+			*/
 			case SHOW_FILELIST_SAVE:    // ファイル保存
 				if(resultCode == RESULT_OK)
 				{
 					// ファイル名取得
 					final String destfilepath = data.getStringExtra(SelectFileName.INTENT_FILEPATH);
-					final boolean destIsEncrypt = data.getBooleanExtra(SelectFileName.INTENT_ENCRYPT, isEncrypt);
+					final String destfileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
 					File destFile = new File(destfilepath);
 					if(destFile.exists())
 					{
@@ -500,7 +485,7 @@ public class TextEdit extends Activity
 										aFile = new File(filepath);
 										//TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 										setTitleBarText(aFile.getName());
-										isEncrypt = destIsEncrypt;
+										fileFormat = destfileFormat;
 										strText = edit.getText().toString();
 										doFileWrite();
 
@@ -525,9 +510,9 @@ public class TextEdit extends Activity
 //					TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 						setTitleBarText(aFile.getName());
 						strText = edit.getText().toString();
-						isEncrypt = data.getBooleanExtra(SelectFileName.INTENT_ENCRYPT, isEncrypt);
+						fileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
 
-//					System.out.println("onActivityResult:" + isEncrypt);
+//					System.out.println("onActivityResult:" + fileFormat);
 
 						doFileWrite();
 					}
@@ -549,18 +534,6 @@ public class TextEdit extends Activity
 
 		mOnPauseTime = new Date().getTime();
 
-		//AutoSave process
-		if(autoSaveFlag && !onPauseBeforeSelectSaveFile)
-		{
-			//message digest 修正されているかどうか確かめるためにdigestを取得して比較する。
-			String tmpDigest = getMessageDigest();
-			if(tmpDigest == null || !tmpDigest.equals(messageDigest))
-			{
-				autoSaveFile();
-			}
-
-		}
-		onPauseBeforeSelectSaveFile = false;
 	}
 
 	//復帰したときにタイマーが満了していたらcloseする(暗号化ファイル限定)
@@ -568,10 +541,10 @@ public class TextEdit extends Activity
 	protected void onResume()
 	{
 		super.onResume();
-//		System.out.println("onResume:" + isEncrypt);
+//		System.out.println("onResume:" + fileFormat);
 
 //        Toast.makeText(this, "onResume()", Toast.LENGTH_SHORT).show();
-		if(isEncrypt && !ignoreOnResume)
+		if(!fileFormat.equals(SelectFileName.FORMAT_TXT) && !ignoreOnResume)
 		{
 			long now = new Date().getTime();
 			if(now - mOnPauseTime > mResetTimer * 60 * 1000)
@@ -591,6 +564,10 @@ public class TextEdit extends Activity
 		{
 			switch(event.getKeyCode())
 			{
+				case KeyEvent.KEYCODE_MENU:
+					myOpenMenu();
+					return true;
+
 				case KeyEvent.KEYCODE_BACK:
 					mBackKeyDown = true;
 					//back keyのACTION_DOWNの時に処理をする。
@@ -641,7 +618,7 @@ public class TextEdit extends Activity
 
 	private void doFileWrite()
 	{
-		if(isEncrypt)
+		if(!fileFormat.equals(SelectFileName.FORMAT_TXT))
 		{
 			//encryptしてbinText
 			getPasswordAndEncryptData();
@@ -738,7 +715,7 @@ public class TextEdit extends Activity
 		try
 		{
 			setStrTextToBinText();
-			binText = MyUtil.encrypt(binText, PasswordBox.getPassDigest());
+			binText = MyUtil.encryptChiData(binText, PasswordBox.getPassDigest());
 
 			progressDlg = ProgressDialog.show(
 					TextEdit.this, null, getString(R.string.notify_saving), true, false);
@@ -811,11 +788,12 @@ public class TextEdit extends Activity
 
 	}
 
+	// // TODO: 17/04/17 Add alternates decoders here
 	private void decryptData()
 	{
 		try
 		{
-			binText = MyUtil.decrypt(binText, PasswordBox.getPassDigest());
+			binText = MyUtil.decryptChiData(binText, PasswordBox.getPassDigest());
 			setBinTextToStrText();
 		}
 		catch(MyUtilException e)
@@ -833,7 +811,7 @@ public class TextEdit extends Activity
 			showMessageAndClose(getString(R.string.alert_general_error) + "\n" + e.toString());
 		}
 
-		isEncrypt = true;
+		fileFormat = SelectFileName.FORMAT_CHI;
 
 	}
 
@@ -851,43 +829,35 @@ public class TextEdit extends Activity
 		else
 		{
 
-			if(autoSaveFlag)
-			{
-				closeAfterSaveFlag = true;
-				autoSaveFile();
-
-			}
-			else
-			{
-				new AlertDialog.Builder(TextEdit.this)
-						.setTitle(R.string.alert_close_modified_file)
-						.setCancelable(true)
-						.setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener()
+			new AlertDialog.Builder(TextEdit.this)
+					.setTitle(R.string.alert_close_modified_file)
+					.setCancelable(true)
+					.setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener()
+					{
+						public void onClick(DialogInterface dialog, int whichButton)
 						{
-							public void onClick(DialogInterface dialog, int whichButton)
+							saveFile();
+							closeAfterSaveFlag = true;
+						}
+					})
+					.setNeutralButton(R.string.action_no,
+							new DialogInterface.OnClickListener()
 							{
-								saveFile();
-								closeAfterSaveFlag = true;
-							}
-						})
-						.setNeutralButton(R.string.action_no,
-								new DialogInterface.OnClickListener()
+								public void onClick(DialogInterface dialog, int whichButton)
 								{
-									public void onClick(DialogInterface dialog, int whichButton)
-									{
-										strText = "";
-										finish();
-									}
-								})
-						.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
+									strText = "";
+									finish();
+								}
+							})
+					.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener()
+					{
+						public void onClick(DialogInterface dialog, int whichButton)
 						{
-							public void onClick(DialogInterface dialog, int whichButton)
-							{
-								//Do Nothing.
-							}
-						})
-						.show();
-			}
+							//Do Nothing.
+						}
+					})
+					.show();
+
 		}
 
 	}
@@ -907,28 +877,6 @@ public class TextEdit extends Activity
 
 	}
 
-	//自動保存用
-	// onPause(),closeFile()の中で呼び出される
-	private void autoSaveFile()
-	{
-		if(aFile.isDirectory())
-		{
-			strText = edit.getText().toString();
-
-			filepath = getFilenameFromHeadLineNonDuplicate();
-			aFile = new File(filepath);
-			setTitleBarText(aFile.getName());
-
-			doFileWrite();
-		}
-		else
-		{
-
-			strText = edit.getText().toString();
-			doFileWrite();
-		}
-	}
-
 	private void saveFileAsNewFile()
 	{
 
@@ -938,53 +886,29 @@ public class TextEdit extends Activity
 		strText = edit.getText().toString();
 		if(aFile.isDirectory())
 		{
-			String s = getHeadLineForFilename();
-			if(s.length() <= 0)
-				s = getString(R.string.hint_newfile);
-			param_filepath = filepath + "/" + s + ".txt";
+			String s = getString(R.string.hint_newfile);
+			//if(s.length() <= 0)
+			//	s = getString(R.string.hint_newfile);
+			param_filepath = filepath + "/" + s + "." + SelectFileName.FORMAT_TXT;
 		}
 		else
 		{
 			param_filepath = filepath;
 		}
 
-		onPauseBeforeSelectSaveFile = true; //intent for avoid aute save file
 		intent.putExtra(SelectFileName.INTENT_MODE, SelectFileName.MODE_SAVE);
 		intent.putExtra(SelectFileName.INTENT_FILEPATH, param_filepath);
-		intent.putExtra(SelectFileName.INTENT_ENCRYPT, isEncrypt);
+		intent.putExtra(SelectFileName.INTENT_FORMAT, fileFormat);
 
 		startActivityForResult(intent, SHOW_FILELIST_SAVE);
 
 	}
 
-	private String getHeadLineForFilename()
-	{
-		String headLine = "";
-
-		//
-		if(strText.length() > 0)
-		{
-			int i = strText.indexOf('\n');
-			if(i >= 0)
-			{
-//				if(i > 32)i=32;//32文字以下にする。
-				headLine = strText.substring(0, i);
-			}
-			else
-			{
-				headLine = strText;
-			}
-			headLine = headLine.replaceAll("^[\\s　]*", "").replaceAll("[\\s　]*$", "");
-			headLine = headLine.replaceAll("[/:,;*?\"<>|]", ".");
-			headLine = headLine.replaceAll("\\\\", ".");
-		}
-		return headLine;
-	}
-
+	// // FIXME: 17/04/17 lost some functionality
 	private String getFilenameFromHeadLineNonDuplicate()
 	{
 		String currentDir;
-		String extention = ".txt";
+		String extention = SelectFileName.FORMAT_TXT;
 
 		if(aFile.isDirectory())
 		{
@@ -994,12 +918,13 @@ public class TextEdit extends Activity
 		{
 			currentDir = aFile.getParent();
 		}
-		String s = getHeadLineForFilename();
+		String s = getString(R.string.hint_newfile);
 		if(s.length() == 0) s = "noTitle";
 
-		if(isEncrypt) extention = ".chi";
+		if(!fileFormat.equals(SelectFileName.FORMAT_TXT))
+			extention = SelectFileName.FORMAT_CHI;
 
-		String dstfilename = currentDir + "/" + s + extention;
+		String dstfilename = currentDir + "/" + s + "." + extention;
 
 
 		File destFile = new File(dstfilename);
@@ -1008,7 +933,7 @@ public class TextEdit extends Activity
 		while(destFile.exists() && !filepath.equals(dstfilename))
 		{
 			i++;
-			dstfilename = currentDir + "/" + s + "(" + i + ")" + extention;
+			dstfilename = currentDir + "/" + s + "(" + i + ")" + "." + extention;
 			destFile = new File(dstfilename);
 		}
 

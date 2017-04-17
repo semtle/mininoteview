@@ -59,7 +59,6 @@ public class Settings extends PreferenceActivity
 		//Boolean viewerModeFlag = Config.getViewerModeFlag();
 		fontSize = Config.getFontSize();
 		String lineBreak = Config.getLineBreak();
-		Boolean autoSaveFlag = Config.getAutoSaveFlag();
 		String typeface = Config.getTypeface();
 		Boolean noTitleBarFlag = Config.getNoTitleBarFlag();
 
@@ -223,17 +222,6 @@ public class Settings extends PreferenceActivity
 			}
 		});
 
-
-		//===========================
-		//Auto save mode
-		//===========================
-		CharSequence autoSaveKey = getText(R.string.prefAutoSaveKey);
-		CheckBoxPreference mAutoSaveCheckBox = (CheckBoxPreference) findPreference(autoSaveKey);
-
-//        ShowBarOnEditBoxCheckBox.setKey(getString(R.string.prefShowBarOnEditBoxKey));
-		mAutoSaveCheckBox.setTitle(R.string.prefAutoSave);
-
-		mAutoSaveCheckBox.setChecked(autoSaveFlag);
 
 		//===========================
 		//PreferenceList(Typeface)

@@ -7,10 +7,8 @@
     <string name="action_save_as">Как…</string>
     <string name="action_preferences">Настройки</string>
     <string name="action_new_folder">Новая папка</string>
-    <string name="notify_opening">Открытие файла</string>
     <string name="notify_saving">Сохранение файла</string>
     <string name="title_password">Введите пароль</string>
-    <string name="title_encrypt">Зашифровать</string>
     <string name="alert_password_mismatch">Пароли не совпадают</string>
     <string name="alert_password_empty">Пароль отключён</string>
 
@@ -80,9 +78,6 @@
 
     <string name="prefLineBreakCode">Конец строки</string>
     <string name="prefLineBreakCodeSummary">Символ возврата каретки</string>
-
-    <string name="prefAutoSave">Автосохранение</string>
-    <string name="prefAutoSaveSummary">Сохранять документ при закрытии или сворачивании программы</string>
 
     <string name="prefTypeface">Стиль шрифта</string>
     <string name="prefTypefaceSummary">Обычный/Моноширинный/Без засечек/С засечками</string>

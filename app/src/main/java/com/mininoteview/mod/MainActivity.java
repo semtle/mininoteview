@@ -12,8 +12,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
@@ -43,10 +41,11 @@ public class MainActivity extends ListActivity
 	private static final int LGM_CANCEL = 5;
 	private static final int LGM_TOTAL = 6;
 
-	private static final int MENUID_NEW = Menu.FIRST;
-	private static final int MENUID_NEW_FOLDER = Menu.FIRST + 1;
-	private static final int MENUID_CLOSE = Menu.FIRST + 2;
-	private static final int MENUID_SETTINGS = Menu.FIRST + 3;
+	private static final int MENUID_NEW_FILE = 0;
+	private static final int MENUID_NEW_FOLDER = 1;
+	private static final int MENUID_CLOSE      = 2;
+	private static final int MENUID_SETTINGS   = 3;
+	private static final int MENUID_TOTAL    = 4;
 
 	private static final int SHOW_TEXT_EDIT = 0;
 	private static final int SHOW_SETTINGS = 1;
@@ -94,7 +93,7 @@ public class MainActivity extends ListActivity
 		else
 		{
 			Toast.makeText(this, initdir.getAbsoluteFile() + " " + getString(R.string.alert_initdir_is_not_exist), Toast.LENGTH_LONG).show();
-			browseToRoot();
+			browseToInitDir();
 		}
 
 		mOrderIcon = (ImageView) findViewById(R.id.orderIcon);
@@ -106,7 +105,7 @@ public class MainActivity extends ListActivity
 		{
 			public void onClick(View v)
 			{
-				changeListOreder();
+				changeListOrder();
 			}
 		});
 
@@ -122,64 +121,6 @@ public class MainActivity extends ListActivity
 			{
 			}
 		});
-	}
-
-	// create Menu
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		super.onCreateOptionsMenu(menu);
-
-		menu.add(0, MENUID_NEW, 0, R.string.action_new)
-				.setShortcut('0', 'n')
-				.setIcon(android.R.drawable.ic_menu_edit);
-
-		menu.add(0, MENUID_NEW_FOLDER, 0, R.string.action_new_folder)
-				.setShortcut('1', 'f')
-				.setIcon(android.R.drawable.ic_menu_add);
-
-		menu.add(0, MENUID_CLOSE, 0, R.string.action_close)
-				.setShortcut('2', 'c')
-				.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
-
-		menu.add(0, MENUID_SETTINGS, 0, R.string.action_preferences)
-				.setShortcut('3', 'n')
-				.setIcon(android.R.drawable.ic_menu_preferences);
-
-		return true;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item)
-	{
-		super.onMenuItemSelected(featureId, item);
-
-		switch(item.getItemId())
-		{
-
-			case MENUID_NEW:
-				Intent intent = new Intent(this, TextEdit.class);
-				intent.putExtra("FILEPATH", this.currentDirectory.getAbsolutePath());
-				startActivity(intent);
-				break;
-
-			case MENUID_NEW_FOLDER:
-				createDir();
-				break;
-			case MENUID_CLOSE:
-				PasswordBox.resetPassword();
-				finish();
-				break;
-
-			case MENUID_SETTINGS:
-				Intent intent1 = new Intent(this, Settings.class);
-				startActivityForResult(intent1, SHOW_SETTINGS);
-				break;
-
-			default:
-				break;
-		}
-		return true;
 	}
 
 	@Override
@@ -243,6 +184,10 @@ public class MainActivity extends ListActivity
 		{
 			switch(event.getKeyCode())
 			{
+				case KeyEvent.KEYCODE_MENU:
+					myOpenMenu();
+					return true;
+
 				case KeyEvent.KEYCODE_DEL:
 					return true;
 
@@ -283,8 +228,8 @@ public class MainActivity extends ListActivity
 						mBackKeyDown = false;
 						if(!showBottomBarFlag)
 						{
-							if(this.currentDirectory.getParent() == null
-									|| this.currentDirectory.toString().equals(mInitDirName))
+							if(currentDirectory.getParent() == null
+									|| currentDirectory.toString().equals(mInitDirName))
 							{
 								PasswordBox.resetPassword();
 								finish();
@@ -320,9 +265,9 @@ public class MainActivity extends ListActivity
 	 * This function browses to the
 	 * root-directory of the file-system.
 	 */
-	private void browseToRoot()
+	private void browseToInitDir()
 	{
-		browseTo(new File("/"));
+		browseTo(new File(mInitDirName));
 	}
 
 	/**
@@ -331,9 +276,9 @@ public class MainActivity extends ListActivity
 	 */
 	private void upOneLevel()
 	{
-		if(this.currentDirectory.getParent() != null)
+		if(currentDirectory.getParent() != null)
 		{
-			this.browseTo(this.currentDirectory.getParentFile());
+			browseTo(currentDirectory.getParentFile());
 		}
 	}
 
@@ -341,8 +286,14 @@ public class MainActivity extends ListActivity
 	{
 		if(aDirectory.isDirectory())
 		{
-			this.currentDirectory = aDirectory;
-			fill(aDirectory);
+			File[] files = aDirectory.listFiles();
+			if(files == null)
+			{
+				Toast.makeText(this, "Unable Access...", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			currentDirectory = aDirectory;
+			fill();
 		}
 		else
 		{
@@ -359,21 +310,15 @@ public class MainActivity extends ListActivity
 	}
 
 
-	private void fill(File dir)
+	private void fill()
 	{
 		directoryEntries.clear();
-		directoryEntries = MyUtil.fillList(dir, mCurrentOrder);
-		if(directoryEntries == null)
-		{
-			Toast.makeText(this, "Unable Access...", Toast.LENGTH_SHORT).show();
-			upOneLevel();
-			return;
-		}
+		directoryEntries = MyUtil.fillList(currentDirectory, mCurrentOrder);
 
 		TextView txtDirName = (TextView) findViewById(R.id.txtDirName);
-		txtDirName.setText(this.currentDirectory.getAbsolutePath());
+		txtDirName.setText(currentDirectory.getAbsolutePath());
 
-		FileListAdapter adapter = new FileListAdapter(this, this.directoryEntries);
+		FileListAdapter adapter = new FileListAdapter(this, directoryEntries);
 		setListAdapter(adapter);
 	}
 
@@ -381,30 +326,30 @@ public class MainActivity extends ListActivity
 	protected void onListItemClick(ListView l, View v, int position, long id)
 	{
 		mCurrentPosition = position;
-		String selectedFileString = this.directoryEntries.get(position);
+		String selectedFileString = directoryEntries.get(position);
 		if(selectedFileString.equals("."))
 		{
 			// Refresh
-			this.browseTo(this.currentDirectory);
+			browseTo(currentDirectory);
 		}
 		else if(selectedFileString.equals(".."))
 		{
-			this.upOneLevel();
+			upOneLevel();
 		}
 		else
 		{
 			File clickedFile;
-			if(this.currentDirectory.getParent() != null)
+			if(currentDirectory.getParent() != null)
 			{
-				clickedFile = new File(this.currentDirectory.getAbsolutePath()
-						+ "/" + this.directoryEntries.get(position));
+				clickedFile = new File(currentDirectory.getAbsolutePath()
+						+ "/" + directoryEntries.get(position));
 			}
 			else
 			{
-				clickedFile = new File(this.currentDirectory.getAbsolutePath()
-						+ this.directoryEntries.get(position));
+				clickedFile = new File(currentDirectory.getAbsolutePath()
+						+ directoryEntries.get(position));
 			}
-			this.browseTo(clickedFile);
+			browseTo(clickedFile);
 		}
 	}
 
@@ -413,20 +358,20 @@ public class MainActivity extends ListActivity
 	{
 
 		//mCurrentPosition = position;
-		String selectedFileString = this.directoryEntries.get(position);
+		String selectedFileString = directoryEntries.get(position);
 
 		if(!selectedFileString.equals(".") && !selectedFileString.equals(".."))
 		{
 			File clickedFile;
-			if(this.currentDirectory.getParent() == null)
+			if(currentDirectory.getParent() == null)
 			{
-				clickedFile = new File(this.currentDirectory.getAbsolutePath()
-						+ this.directoryEntries.get(position));
+				clickedFile = new File(currentDirectory.getAbsolutePath()
+						+ directoryEntries.get(position));
 			}
 			else
 			{
-				clickedFile = new File(this.currentDirectory.getAbsolutePath()
-						+ "/" + this.directoryEntries.get(position));
+				clickedFile = new File(currentDirectory.getAbsolutePath()
+						+ "/" + directoryEntries.get(position));
 			}
 
 			final File file = clickedFile;
@@ -482,12 +427,56 @@ public class MainActivity extends ListActivity
 
 	}
 
+	protected void myOpenMenu()
+	{
+			CharSequence[] items = new CharSequence[MENUID_TOTAL];
+			items[MENUID_NEW_FILE] = getText(R.string.action_new_file);
+			items[MENUID_NEW_FOLDER] = getText(R.string.action_new_folder);
+			items[MENUID_CLOSE] = getText(R.string.action_close);
+			items[MENUID_SETTINGS] = getText(R.string.action_preferences);
+
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.longclick_menu_title)
+					.setItems(items, new DialogInterface.OnClickListener()
+					{
+						public void onClick(DialogInterface dialog, int item)
+						{
+							switch(item)
+							{
+
+								case MENUID_NEW_FILE: // new file
+									Intent intent = new Intent(MainActivity.this, TextEdit.class);
+									intent.putExtra("FILEPATH", currentDirectory.getAbsolutePath());
+									startActivity(intent);
+									break;
+
+								case MENUID_NEW_FOLDER: // new folder
+									createDir();
+									break;
+
+								case MENUID_CLOSE: // close
+									PasswordBox.resetPassword();
+									finish();
+									break;
+
+								case MENUID_SETTINGS: // settings
+									Intent intent1 = new Intent(MainActivity.this, Settings.class);
+									startActivityForResult(intent1, SHOW_SETTINGS);
+									break;
+
+								default:
+									break;
+							}
+						}
+					})
+					.show();
+	}
 
 	private void openFile(File aFile)
 	{
-
+		// // FIXME: 13/04/17 This must be simplified...
 		String end = aFile.getName().substring(aFile.getName().lastIndexOf(".") + 1, aFile.getName().length()).toLowerCase();
-		if(end.equals("txt") || MyUtil.isChiFile(aFile))
+		if(end.equals("txt") || MyUtil.getChiSize(aFile) >= 0)
 		{
 			Intent intent = new Intent(this, TextEdit.class);
 			intent.putExtra("FILEPATH", aFile.getAbsolutePath());
@@ -500,14 +489,10 @@ public class MainActivity extends ListActivity
 			// other files...
 			// Create an Intent
 			Intent intent = new Intent();
-
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			intent.setAction(android.content.Intent.ACTION_VIEW);
 			String type = getMIMEType(aFile);
-			// Setting up the data and the type for the intent
 			intent.setDataAndType(Uri.fromFile(aFile), type);
-
-			// will start the activtiy found by android or show a dialog to select one
 			startActivity(intent);
 		}
 	}
@@ -578,9 +563,9 @@ public class MainActivity extends ListActivity
 						EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 						String name = nameEditText.getText().toString();
 
-						String curDir = MainActivity.this.currentDirectory.getAbsolutePath();
+						String curDir = currentDirectory.getAbsolutePath();
 
-						if(MainActivity.this.currentDirectory.getParent() != null)
+						if(currentDirectory.getParent() != null)
 						{
 							curDir = curDir + "/";
 						}
@@ -614,10 +599,8 @@ public class MainActivity extends ListActivity
 						}
 						else
 						{
-							//nameが空だったら終了する
-							//	finish();
 							Toast.makeText(MainActivity.this, R.string.alert_name_empty, Toast.LENGTH_SHORT).show();
-							renameFile(file);//もう一度やりなおし
+							renameFile(file);
 						}
 
 					}
@@ -632,14 +615,10 @@ public class MainActivity extends ListActivity
 			//			  @Override
 			public void onCancel(DialogInterface dialog)
 			{
-//				Log.v("TextEdit","onCancel");
-				// キャンセルボタンと戻るボタンが押された時の処理をここに記述する。
-				//do nothing
+
 			}
 		})
-				.setView(inputView)
-//		.show(); //ダイアログ表示
-		;//divide statement to focus control
+				.setView(inputView);
 
 		final AlertDialog dialog = builder.create();
 		dialog.show();
@@ -661,17 +640,11 @@ public class MainActivity extends ListActivity
 
 	private void createDir()
 	{
-
-		//コンテキストからインフレータを取得
 		LayoutInflater inflater = LayoutInflater.from(this);
-		//レイアウトXMLからビュー(レイアウト)をインフレート
 		final View inputView = inflater.inflate(R.layout.input_name, null);
 
 		EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
-		///nameEditText.setText(R.string.default_new_folder_name);
-
 		nameEditText.setText(R.string.hint_newfolder);
-
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.title_folder_name)
@@ -682,9 +655,9 @@ public class MainActivity extends ListActivity
 						EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 						String name = nameEditText.getText().toString();
 
-						String curDir = MainActivity.this.currentDirectory.getAbsolutePath();
+						String curDir = currentDirectory.getAbsolutePath();
 
-						if(MainActivity.this.currentDirectory.getParent() != null)
+						if(currentDirectory.getParent() != null)
 						{
 							curDir = curDir + "/";
 						}
@@ -726,7 +699,6 @@ public class MainActivity extends ListActivity
 		{
 			public void onClick(DialogInterface dialog, int whichButton)
 			{
-				//do nothing
 			}
 		}).setOnCancelListener(new DialogInterface.OnCancelListener()
 		{
@@ -745,7 +717,6 @@ public class MainActivity extends ListActivity
 
 		intent.putExtra(SelectFileName.INTENT_MODE, SelectFileName.MODE_MOVE);
 		intent.putExtra(SelectFileName.INTENT_FILEPATH, aFile.getAbsolutePath());
-		intent.putExtra(SelectFileName.INTENT_ENCRYPT, false);
 
 		startActivityForResult(intent, SHOW_FILELIST_MOVE);
 	}
@@ -762,7 +733,6 @@ public class MainActivity extends ListActivity
 
 		intent.putExtra(SelectFileName.INTENT_MODE, SelectFileName.MODE_COPY);
 		intent.putExtra(SelectFileName.INTENT_FILEPATH, aFile.getAbsolutePath());
-		intent.putExtra(SelectFileName.INTENT_ENCRYPT, false);
 
 		startActivityForResult(intent, SHOW_FILELIST_COPY);
 	}
@@ -776,8 +746,6 @@ public class MainActivity extends ListActivity
 	private void updateConfig()
 	{
 		Config.update(this);
-		//mInitDirName = Config.getInitDirName();
-
 		mCurrentOrder = Config.getFileListOrder();
 
 		boolean tempFlag = showBottomBarFlag;
@@ -803,7 +771,7 @@ public class MainActivity extends ListActivity
 			{
 				public void onClick(View v)
 				{
-					openOptionsMenu();
+					myOpenMenu();
 				}
 
 			});
@@ -834,9 +802,9 @@ public class MainActivity extends ListActivity
 	}
 
 
-	private void changeListOreder()
+	private void changeListOrder()
 	{
-		mCurrentOrder *= -1;//反転させる。
+		mCurrentOrder *= -1;
 		if(mCurrentOrder > 0)
 		{
 			mOrderIcon.setImageResource(android.R.drawable.arrow_up_float);
@@ -848,7 +816,7 @@ public class MainActivity extends ListActivity
 
 		if(mCurrentPosition > -1)
 		{
-			int count = this.getListView().getAdapter().getCount();
+			int count = getListView().getAdapter().getCount();
 			mCurrentPosition = count - mCurrentPosition - 1;
 		}
 		refreshDir();
@@ -861,7 +829,6 @@ public class MainActivity extends ListActivity
 				.setMessage(msg)
 				.setNeutralButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
-					// この中に"YES"時の処理をいれる。
 					public void onClick(DialogInterface dialog, int whichButton)
 					{
 					}
@@ -880,12 +847,11 @@ public class MainActivity extends ListActivity
 		mCurrentPosition = position;
 	}
 
-	//	private void refreshDir(){
 	public void refreshDir()
 	{
-		if(this.currentDirectory.isDirectory())
+		if(currentDirectory.isDirectory())
 		{
-			fill(this.currentDirectory);
+			fill();
 		}
 	}
 

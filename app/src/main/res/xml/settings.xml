@@ -40,11 +40,6 @@
             />
 
         <CheckBoxPreference
-            android:key="@string/prefAutoSaveKey"
-            android:summary="@string/prefAutoSaveSummary"
-            android:title="@string/prefAutoSave"
-            />
-        <CheckBoxPreference
             android:key="@string/prefNoTitleBarKey"
             android:summary="@string/prefNoTitleBarSummary"
             android:title="@string/prefNoTitleBar"

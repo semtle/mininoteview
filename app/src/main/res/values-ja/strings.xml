@@ -6,10 +6,8 @@
     <string name="action_save_as">名前を付けて保存</string>
     <string name="action_preferences">設定</string>
     <string name="action_new_folder">新規フォルダー</string>
-    <string name="notify_opening">ファイルを開いています。</string>
     <string name="notify_saving">ファイルを保存しています。</string>
     <string name="title_password">パスワード入力</string>
-    <string name="title_encrypt">暗号化</string>
     <string name="alert_password_mismatch">パスワードが一致しません。もう一度試してください。</string>
     <string name="alert_password_empty">パスワードが空です。</string>
 
@@ -74,9 +72,6 @@
     <string name="prefLineBreakCode">改行コード</string>
     <string name="prefLineBreakCodeSummary">改行コード</string>
 
-
-    <string name="prefAutoSave">自動保存モード</string>
-    <string name="prefAutoSaveSummary">メモを自動で保存します。(閉じる時とアプリがバックグラウンドに移行した時)</string>
 
     <string name="prefTypeface">フォント</string>
     <string name="prefTypefaceSummary">default/monospace/sans serif/serif</string>
