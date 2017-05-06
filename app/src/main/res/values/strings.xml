@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Mininoteview</string>
+    <string name="app_name" translatable="false">Minovie</string>
 
     <string name="hint_newfolder">NewFolder</string>
     <string name="hint_newfile">NewFile</string>
 
     <string name="longclick_menu_title">Action</string>
 
-    <string name="action_new">New</string>
     <string name="action_close">Close</string>
     <string name="action_save">Save</string>
     <string name="action_save_as">Save As…</string>
@@ -67,14 +66,6 @@
     <string name="category_dir">File Browser View</string>
     <string name="category_edit">Note View</string>
 
-    <string name="prefPWResetTimerKey" translatable="false">PWResetTimer</string>
-    <string name="prefPWResetTimer">Password Timer(min)</string>
-    <string name="prefPWResetTimerSummary">minutes</string>
-
-    <string name="prefCharsetNameKey" translatable="false">prefCharsetName</string>
-    <string name="prefCharsetName">Character Sets</string>
-    <string name="prefCharsetNameSummary">Character Set</string>
-
     <string name="prefShowButtonsKey" translatable="false">showButtons</string>
     <string name="prefShowButtons">Show Buttons on Bottom</string>
     <string name="prefShowButtonsSummary">Show Buttons(up dir/menu,close/menu)</string>
@@ -85,10 +76,6 @@
     <string name="prefFontSize">Text Size</string>
     <string name="prefFontSizeSummary">Text Size</string>
     <string name="prefFontSizeSampleText">Size(sp)</string>
-
-    <string name="prefLineBreakCodeKey" translatable="false">prefLineBreakCode</string>
-    <string name="prefLineBreakCode">Line Break Character</string>
-    <string name="prefLineBreakCodeSummary">Line Break Character</string>
 
     <string name="prefTypefaceKey" translatable="false">prefTypeface</string>
     <string name="prefTypeface">Font Style</string>

@@ -16,10 +16,10 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#333333"
+            android:background="#404040"
             android:paddingBottom="8dip"
             android:paddingTop="4dip"
-            android:textColor="#ffffff"
+            android:textColor="#D0D0D0"
             android:textSize="14sp"
             />
         <ImageView
@@ -27,7 +27,7 @@
             android:layout_width="50sp"
             android:layout_height="fill_parent"
             android:layout_weight="1"
-            android:background="#333333"
+            android:background="#404040"
             android:paddingBottom="0sp"
             android:paddingLeft="8sp"
             android:paddingRight="8sp"

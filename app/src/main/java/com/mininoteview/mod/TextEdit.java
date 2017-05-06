@@ -17,8 +17,6 @@ import android.text.Layout;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -32,18 +30,12 @@ import android.widget.ScrollView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
-import java.util.Date;
 
 
 public class TextEdit extends Activity
 {
-	//改行コード
-	public static final int LINEBREAK_AUTO = 0;
-	public static final int LINEBREAK_CRLF = 1;
-	public static final int LINEBREAK_LF = 2;
-	public static final int LINEBREAK_CR = 3;
-
 	private static final int MENUID_CLOSE = 0;
 	private static final int MENUID_SAVE = 1;
 	private static final int MENUID_SAVE_AS = 2;
@@ -68,11 +60,7 @@ public class TextEdit extends Activity
 	private String ErrorMessage = "";
 	private ProgressDialog progressDlg;
 	private boolean ignoreOnResume = false;
-	private int mResetTimer = 3;
-	private long mOnPauseTime = 0;
 	// Preferences
-	private String charsetName = "UTF-8";
-	private int lineBreakSetting = LINEBREAK_AUTO;
 	private Typeface mTypeface = Typeface.DEFAULT;
 	private boolean showBottomBarFlag = true;
 	private float fontSize = 18;
@@ -89,7 +77,7 @@ public class TextEdit extends Activity
 		}
 	};
 
-	private String messageDigest;
+	private byte[] messageDigest;
 
 	final Runnable run_readFinished = new Runnable()
 	{
@@ -99,23 +87,13 @@ public class TextEdit extends Activity
 
 			if(MyUtil.getChiSize(binText) >= 0 && !filepath.endsWith(".txt"))
 			{
-				if(PasswordBox.getPassDigest() == null)
-				{
 					getPasswordAndDecryptData();
-				}
-				else
-				{
-					decryptData();
-					setStringToEditText();
-					setSelection();
-				}
-
 			}
 			else
 			{
 				try
 				{
-					setBinTextToStrText();
+					strText = new String(binText, Charset.forName("UTF-8"));
 				}
 				catch(Exception e)
 				{
@@ -149,16 +127,11 @@ public class TextEdit extends Activity
 				finish();
 			}
 
-			//message digest 取得 ファイルを正常に保存できたのでdigest更新
 			messageDigest = getMessageDigest();
-
-
 		}
 	};
-	//Scroll中かどうかを示すフラグ
 	private boolean onScrollFlag = false;
-	//private boolean hideIMEFlag = false;
-	// キーイベント発生時、呼び出されます
+
 	private boolean mBackKeyDown = false;
 
 	@Override
@@ -208,7 +181,6 @@ public class TextEdit extends Activity
 		{
 			this.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-//			TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 			setTitleBarText(aFile.getName());
 			progressDlg = ProgressDialog.show(this, null, "Now Loading...", true, false);
 			new FileReadThread().start();
@@ -226,44 +198,14 @@ public class TextEdit extends Activity
 
 	private void initConfig()
 	{
-		//PasswordBoxのタイマーセット
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String timerString = sharedPreferences.getString(getString(R.string.prefPWResetTimerKey), "3");
-		mResetTimer = Integer.parseInt(timerString);
-		PasswordBox.setTimerVal(mResetTimer);
 
-		//charset name セット
-		charsetName = sharedPreferences.getString(getString(R.string.prefCharsetNameKey), "utf-8");
-
-		//showBottomBarFlagセット
 		showBottomBarFlag = sharedPreferences.getBoolean(getString(R.string.prefShowButtonsKey), true);
 
-		//fontsizeセット
 		fontSize = sharedPreferences.getFloat(getString(R.string.prefFontSizeKey), fontSize);
 
-		//linebreakセット
-		String linebreakString = sharedPreferences.getString(getString(R.string.prefLineBreakCodeKey), "auto");
-		if(linebreakString.equalsIgnoreCase("auto"))
-		{
-			lineBreakSetting = LINEBREAK_AUTO;
-		}
-		else if(linebreakString.equalsIgnoreCase("crlf"))
-		{
-			lineBreakSetting = LINEBREAK_CRLF;
-		}
-		else if(linebreakString.equalsIgnoreCase("lf"))
-		{
-			lineBreakSetting = LINEBREAK_LF;
-		}
-		else if(linebreakString.equalsIgnoreCase("cr"))
-		{
-			lineBreakSetting = LINEBREAK_CR;
-		}
-
-		//intentでファイルパスを渡されなかったときの為にinitDirをfilepathにセット
 		filepath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-		//typefaceセット
 		String typefaceString = sharedPreferences.getString(getString(R.string.prefTypefaceKey), "DEFAULT");
 		if(typefaceString.equalsIgnoreCase("DEFAULT"))
 		{
@@ -290,30 +232,25 @@ public class TextEdit extends Activity
 
 	private void addBottomBar()
 	{
-		View bottombar = getLayoutInflater().inflate(R.layout.bottom_bar, null);
 		ViewGroup editboxlayout = (ViewGroup) findViewById(R.id.editboxlayout);
+		View bottombar = getLayoutInflater().inflate(R.layout.bottom_bar, editboxlayout, false);
+		//View bottombar = getLayoutInflater().inflate(R.layout.bottom_bar, null);
 
-		// ボタンのクリックリスナー
 		Button btnUpDir = (Button) bottombar.findViewById(R.id.LeftButton);
 		btnUpDir.setText(R.string.action_close);
 		btnUpDir.setOnClickListener(new View.OnClickListener()
 		{
-
-			//		@Override
 			public void onClick(View v)
 			{
-				//ボタンを押したときの動作
 				closeFile();
 			}
 
 		});
-		// ボタンのクリックリスナー
+
 		Button btnMenu = (Button) bottombar.findViewById(R.id.RightButton);
 		btnMenu.setText(R.string.action_menu);
 		btnMenu.setOnClickListener(new View.OnClickListener()
 		{
-
-			//		@Override
 			public void onClick(View v)
 			{
 				myOpenMenu();
@@ -354,7 +291,6 @@ public class TextEdit extends Activity
 
 		edit.setOnTouchListener(new OnTouchListener()
 		{
-			//@Override
 			public boolean onTouch(View v, MotionEvent event)
 			{
 				switch(event.getAction())
@@ -381,7 +317,6 @@ public class TextEdit extends Activity
 
 		scrollview.setOnTouchListener(new OnTouchListener()
 		{
-			//@Override
 			public boolean onTouch(View v, MotionEvent event)
 			{
 
@@ -440,20 +375,18 @@ public class TextEdit extends Activity
 				.show();
 	}
 
-	// FileListアクティビティからの戻り
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
-		ignoreOnResume = true;//onResumeでの処理を無視するためのフラグセット
+		ignoreOnResume = true;
 		switch(requestCode)
 		{
 			/*
-			case SHOW_FILELIST_OPEN:    // ファイルオープン
+			case SHOW_FILELIST_OPEN:
 				if(resultCode == RESULT_OK)
 				{
 					filepath = data.getStringExtra(SelectFileName.INTENT_FILEPATH);
 					aFile = new File(filepath);
-//				TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 					setTitleBarText(aFile.getName());
 					fileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
 
@@ -463,10 +396,9 @@ public class TextEdit extends Activity
 				}
 				break;
 			*/
-			case SHOW_FILELIST_SAVE:    // ファイル保存
+			case SHOW_FILELIST_SAVE:
 				if(resultCode == RESULT_OK)
 				{
-					// ファイル名取得
 					final String destfilepath = data.getStringExtra(SelectFileName.INTENT_FILEPATH);
 					final String destfileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
 					File destFile = new File(destfilepath);
@@ -483,7 +415,6 @@ public class TextEdit extends Activity
 
 										filepath = destfilepath;
 										aFile = new File(filepath);
-										//TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 										setTitleBarText(aFile.getName());
 										fileFormat = destfileFormat;
 										strText = edit.getText().toString();
@@ -499,21 +430,16 @@ public class TextEdit extends Activity
 										//Do Nothing.
 									}
 								})
-								.show(); //ダイアログ表示;
+								.show();
 
 					}
 					else
 					{
-						//既にファイルが存在しなければ、上書き保存の確認をせずに保存
 						filepath = data.getStringExtra(SelectFileName.INTENT_FILEPATH);
 						aFile = new File(filepath);
-//					TextEdit.this.setTitle(getString(R.string.app_name) + " - " + aFile.getName());
 						setTitleBarText(aFile.getName());
 						strText = edit.getText().toString();
 						fileFormat = data.getStringExtra(SelectFileName.INTENT_FORMAT);
-
-//					System.out.println("onActivityResult:" + fileFormat);
-
 						doFileWrite();
 					}
 
@@ -525,36 +451,22 @@ public class TextEdit extends Activity
 		}
 	}
 
-	//バックグラウンドになる前にタイマーをリセットしておく
 	@Override
 	protected void onPause()
 	{
 		super.onPause();
-//        Toast.makeText(this, "onPause()", Toast.LENGTH_SHORT).show();
-
-		mOnPauseTime = new Date().getTime();
-
 	}
 
-	//復帰したときにタイマーが満了していたらcloseする(暗号化ファイル限定)
 	@Override
 	protected void onResume()
 	{
 		super.onResume();
-//		System.out.println("onResume:" + fileFormat);
-
-//        Toast.makeText(this, "onResume()", Toast.LENGTH_SHORT).show();
 		if(!fileFormat.equals(SelectFileName.FORMAT_TXT) && !ignoreOnResume)
 		{
-			long now = new Date().getTime();
-			if(now - mOnPauseTime > mResetTimer * 60 * 1000)
-			{
-				//タイマーが満了していたら
-				finish();
-			}
+			finish();
 		}
 
-		ignoreOnResume = false;//初期化
+		ignoreOnResume = false;
 	}
 
 	@Override
@@ -570,18 +482,14 @@ public class TextEdit extends Activity
 
 				case KeyEvent.KEYCODE_BACK:
 					mBackKeyDown = true;
-					//back keyのACTION_DOWNの時に処理をする。
-					//   			closeFile();//
 					return true;
 
-				case KeyEvent.KEYCODE_DPAD_LEFT: // 左キー
-					//現在のカーソルの位置が0なら閉じる
+				case KeyEvent.KEYCODE_DPAD_LEFT:
 					if(edit.getSelectionStart() == 0 && edit.getSelectionEnd() == 0)
 					{
 						closeFile();
 						return true;
 					}
-					//through to default
 				default:
 					mBackKeyDown = false;
 					break;
@@ -589,15 +497,14 @@ public class TextEdit extends Activity
 		}
 
 		if(event.getAction() == KeyEvent.ACTION_UP)
-		{ // キーが離された時
+		{
 			switch(event.getKeyCode())
 			{
-				//back keyは無視するACTION_DOWNの時に処理をする。
-				case KeyEvent.KEYCODE_BACK: // BACK KEY
+				case KeyEvent.KEYCODE_BACK:
 					if(mBackKeyDown)
 					{
-						mBackKeyDown = false;//戻しておく
-						closeFile();//
+						mBackKeyDown = false;
+						closeFile();
 						return true;
 					}
 					else
@@ -612,16 +519,11 @@ public class TextEdit extends Activity
 		return super.dispatchKeyEvent(event);
 	}
 
-	// ----------------------------------------
-	// 以下、ファイル処理スレッド
-	// ----------------------------------------
-
 	private void doFileWrite()
 	{
 		if(!fileFormat.equals(SelectFileName.FORMAT_TXT))
 		{
-			//encryptしてbinText
-			getPasswordAndEncryptData();
+			getPasswordForEncryptAndSave();
 		}
 		else
 		{
@@ -630,9 +532,7 @@ public class TextEdit extends Activity
 
 			try
 			{
-				setStrTextToBinText();
-//				binText = strText.getBytes(charsetName);
-				// encodeを指定してbinに変換する。
+				binText = strText.getBytes(Charset.forName("UTF-8"));
 				new FileWriteThread().start();
 
 			}
@@ -644,47 +544,28 @@ public class TextEdit extends Activity
 		}
 	}
 
-	/*
-	 * データ保存時のパスワード取得とencrypt
-	 */
-	private void getPasswordAndEncryptData()
-	{
-
-		if(PasswordBox.getPassDigest() != null)
-		{
-			encryptDataAndSave();
-		}
-		else
-		{
-			getPasswordForEncryptAndSave();
-		}
-	}
-
 	private void getPasswordForEncryptAndSave()
 	{
-		//コンテキストからインフレータを取得
 		LayoutInflater inflater = LayoutInflater.from(this);
-		//レイアウトXMLからビュー(レイアウト)をインフレート
-		final View inputView = inflater.inflate(R.layout.input_pass2, null);
 
-		//ダイアログを構成
-//		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		ViewGroup textEditView = (ViewGroup) findViewById(R.id.editboxlayout);
+		final View inputView = inflater.inflate(R.layout.input_pass2, textEditView, false);
+		//final View inputView = inflater.inflate(R.layout.input_pass2, null);
+
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
 				.setTitle(R.string.title_password)
 				.setCancelable(true)
 				.setPositiveButton(R.string.action_ok, new DialogInterface.OnClickListener()
 				{
-					//		    @Override
 					public void onClick(DialogInterface dialog, int which)
 					{
-						//OKボタンが押下された時に入力された文字を設定する
 						EditText passEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 						EditText passEditTextConfirm = (EditText) inputView.findViewById(R.id.dialog_edittext_confirm);
 						String pass = passEditText.getText().toString();
 						if(pass.equals(passEditTextConfirm.getText().toString()) && pass.length() > 0)
 						{
-							PasswordBox.setPassword(pass);
-							encryptDataAndSave();
+							//PasswordBox.setPassword(pass);
+							encryptDataAndSave(pass.getBytes(Charset.forName("UTF-8")));
 						}
 						else
 						{
@@ -703,19 +584,21 @@ public class TextEdit extends Activity
 				.setView(inputView)
 				.create();
 
-		alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+		Window w = alertDialog.getWindow();
+		if(w != null)
+			w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
-		alertDialog.show(); //ダイアログ表示
+		alertDialog.show();
 
 
 	}
 
-	private void encryptDataAndSave()
+	private void encryptDataAndSave(byte[] password)
 	{
 		try
 		{
-			setStrTextToBinText();
-			binText = MyUtil.encryptChiData(binText, PasswordBox.getPassDigest());
+			binText = strText.getBytes(Charset.forName("UTF-8"));
+			binText = MyUtil.encryptChiData(binText, MyUtil.md5Key(password));
 
 			progressDlg = ProgressDialog.show(
 					TextEdit.this, null, getString(R.string.notify_saving), true, false);
@@ -725,21 +608,20 @@ public class TextEdit extends Activity
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			PasswordBox.resetPassword();
+			//PasswordBox.resetPassword();
 			showMessage(getString(R.string.alert_general_error) + "\n" + e.toString());
 		}
 
 	}
 
-	/**
-	 * input password 1
-	 */
 	private void getPasswordAndDecryptData()
 	{
 
 		LayoutInflater inflater = LayoutInflater.from(this);
+		ViewGroup textEditView = (ViewGroup) findViewById(R.id.editboxlayout);
 
-		final View inputView = inflater.inflate(R.layout.input_pass, null);
+		final View inputView = inflater.inflate(R.layout.input_pass, textEditView, false);
+		//final View inputView = inflater.inflate(R.layout.input_pass, null);
 
 
 		final AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -752,8 +634,8 @@ public class TextEdit extends Activity
 						String pass = passEditText.getText().toString();
 						if(pass.length() > 0)
 						{
-							PasswordBox.setPassword(pass);
-							decryptData();
+							//PasswordBox.setPassword(pass);
+							decryptData(pass.getBytes(Charset.forName( "UTF-8" )));
 							setStringToEditText();
 							setSelection();
 							messageDigest = getMessageDigest();
@@ -781,25 +663,25 @@ public class TextEdit extends Activity
 				.setView(inputView)
 				.create();
 
-		alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+		Window w = alertDialog.getWindow();
+		if(w != null)
+			w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
-		alertDialog.show(); //ダイアログ表示
-
-
+		alertDialog.show();
 	}
 
 	// // TODO: 17/04/17 Add alternates decoders here
-	private void decryptData()
+	private void decryptData(byte[] pass)
 	{
 		try
 		{
-			binText = MyUtil.decryptChiData(binText, PasswordBox.getPassDigest());
-			setBinTextToStrText();
+			binText = MyUtil.decryptChiData(binText, MyUtil.md5Key(pass));
+			strText = new String(binText, Charset.forName("UTF-8"));
 		}
 		catch(MyUtilException e)
 		{
 			e.printStackTrace();
-			PasswordBox.resetPassword();
+			//PasswordBox.resetPassword();
 			String errorMsg = getString(e.getCode());
 			showMessageAndClose(errorMsg);
 
@@ -807,7 +689,7 @@ public class TextEdit extends Activity
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			PasswordBox.resetPassword();
+			//PasswordBox.resetPassword();
 			showMessageAndClose(getString(R.string.alert_general_error) + "\n" + e.toString());
 		}
 
@@ -815,12 +697,11 @@ public class TextEdit extends Activity
 
 	}
 
-	// close buttomを押したときの処理
 	private void closeFile()
 	{
-		String tmpDigest = getMessageDigest();
+		byte[] tmpDigest = getMessageDigest();
 
-		if(tmpDigest != null && tmpDigest.equals(messageDigest))
+		if(tmpDigest != null && MessageDigest.isEqual(tmpDigest, messageDigest))
 		{
 			// not modified
 			strText = "";
@@ -940,29 +821,14 @@ public class TextEdit extends Activity
 		return dstfilename;
 	}
 
-	private String getMessageDigest()
+	private byte[] getMessageDigest()
 	{
 
 		try
 		{
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			md.update(edit.getText().toString().getBytes());
-			byte[] b = md.digest();
-
-			StringBuilder s = new StringBuilder();
-			for(byte aB : b)
-			{
-				int d = aB;
-				d += d < 0 ? 256 : 0; // byte 128-255
-				if(d < 16)
-				{ //0-15 16
-					s.append("0");
-				}
-				s.append(Integer.toString(d, 16));
-			}
-			return s.toString();
-
-
+			return md.digest();
 		}
 		catch(Exception e)
 		{
@@ -972,52 +838,6 @@ public class TextEdit extends Activity
 		}
 		return null;
 
-	}
-
-	private void setBinTextToStrText() throws Exception
-	{
-		strText = new String(binText, charsetName);
-
-		if(lineBreakSetting == LINEBREAK_AUTO)
-		{
-			lineBreakSetting = checkLineBreak();
-		}
-
-		strText = strText.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
-
-
-	}
-
-	private void setStrTextToBinText() throws Exception
-	{
-		if(lineBreakSetting == LINEBREAK_CRLF)
-		{
-			strText = strText.replaceAll("\n", "\r\n");
-		}
-		else if(lineBreakSetting == LINEBREAK_CR)
-		{
-			strText = strText.replaceAll("\n", "\r");
-		}
-
-		binText = strText.getBytes(charsetName);
-
-
-	}
-
-	private int checkLineBreak()
-	{
-		if(strText.contains("\r\n"))
-		{ //CRLF
-			return LINEBREAK_CRLF;
-		}
-		else if(strText.contains("\r"))
-		{
-			return LINEBREAK_CR;
-		}
-		else
-		{
-			return LINEBREAK_LF;
-		}
 	}
 
 	private void setSelection()

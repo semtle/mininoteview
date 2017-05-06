@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
@@ -53,7 +54,7 @@ public class MainActivity extends ListActivity
 	private static final int SHOW_FILELIST_MOVE = 3;
 
 	private List<String> directoryEntries = new ArrayList<String>();
-	private String mInitDirName = Environment.getExternalStorageDirectory().getAbsolutePath();
+	private final String mInitDirName = Environment.getExternalStorageDirectory().getAbsolutePath();
 	private File currentDirectory = new File(mInitDirName);
 	private boolean showBottomBarFlag = false;
 	private View mBottombar = null;
@@ -165,7 +166,7 @@ public class MainActivity extends ListActivity
 	public void onDestroy()
 	{
 		saveConfig();
-		PasswordBox.resetPassword();
+		//PasswordBox.resetPassword();
 		super.onDestroy();
 
 	}
@@ -231,7 +232,7 @@ public class MainActivity extends ListActivity
 							if(currentDirectory.getParent() == null
 									|| currentDirectory.toString().equals(mInitDirName))
 							{
-								PasswordBox.resetPassword();
+								//PasswordBox.resetPassword();
 								finish();
 							}
 							else
@@ -276,9 +277,10 @@ public class MainActivity extends ListActivity
 	 */
 	private void upOneLevel()
 	{
-		if(currentDirectory.getParent() != null)
+		File parent = currentDirectory.getParentFile();
+		if(parent != null)
 		{
-			browseTo(currentDirectory.getParentFile());
+			browseTo(parent);
 		}
 	}
 
@@ -329,28 +331,20 @@ public class MainActivity extends ListActivity
 		String selectedFileString = directoryEntries.get(position);
 		if(selectedFileString.equals("."))
 		{
-			// Refresh
 			browseTo(currentDirectory);
+			return;
 		}
-		else if(selectedFileString.equals(".."))
+		if(selectedFileString.equals(".."))
 		{
 			upOneLevel();
+			return;
 		}
-		else
-		{
-			File clickedFile;
-			if(currentDirectory.getParent() != null)
-			{
-				clickedFile = new File(currentDirectory.getAbsolutePath()
-						+ "/" + directoryEntries.get(position));
-			}
-			else
-			{
-				clickedFile = new File(currentDirectory.getAbsolutePath()
-						+ directoryEntries.get(position));
-			}
-			browseTo(clickedFile);
-		}
+
+		File clickedFile;
+		clickedFile = new File(currentDirectory.getAbsolutePath()
+				+ "/" + directoryEntries.get(position));
+		browseTo(clickedFile);
+
 	}
 
 	//	@Override
@@ -455,7 +449,7 @@ public class MainActivity extends ListActivity
 									break;
 
 								case MENUID_CLOSE: // close
-									PasswordBox.resetPassword();
+									//PasswordBox.resetPassword();
 									finish();
 									break;
 
@@ -535,7 +529,10 @@ public class MainActivity extends ListActivity
 
 		LayoutInflater inflater = LayoutInflater.from(this);
 
-		final View inputView = inflater.inflate(R.layout.input_name, null);
+		if(mMainlayout == null)
+			mMainlayout = (ViewGroup) findViewById(R.id.mainLayout);
+		final View inputView = inflater.inflate(R.layout.input_name, mMainlayout, false);
+		//final View inputView = inflater.inflate(R.layout.input_name, null);
 
 		final EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 		nameEditText.setText(file.getName());
@@ -565,17 +562,11 @@ public class MainActivity extends ListActivity
 
 						String curDir = currentDirectory.getAbsolutePath();
 
-						if(currentDirectory.getParent() != null)
-						{
-							curDir = curDir + "/";
-						}
-
-
 						if(name.length() > 0)
 						{
 							try
 							{
-								if(MyUtil.renameFile(file, new File(curDir + name)))
+								if(MyUtil.renameFile(file, new File(curDir + "/" + name)))
 								{
 									Toast.makeText(MainActivity.this, R.string.toast_rename_file, Toast.LENGTH_SHORT).show();
 									refreshDir();
@@ -627,9 +618,10 @@ public class MainActivity extends ListActivity
 		{
 			public void onFocusChange(View v, boolean hasFocus)
 			{
-				if(hasFocus)
+				Window w = dialog.getWindow();
+				if(hasFocus && w != null)
 				{
-					dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+					w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 				}
 			}
 		});
@@ -641,7 +633,10 @@ public class MainActivity extends ListActivity
 	private void createDir()
 	{
 		LayoutInflater inflater = LayoutInflater.from(this);
-		final View inputView = inflater.inflate(R.layout.input_name, null);
+		if(mMainlayout == null)
+			mMainlayout = (ViewGroup) findViewById(R.id.mainLayout);
+		final View inputView = inflater.inflate(R.layout.input_name, mMainlayout, false);
+		//final View inputView = inflater.inflate(R.layout.input_name, null);
 
 		EditText nameEditText = (EditText) inputView.findViewById(R.id.dialog_edittext);
 		nameEditText.setText(R.string.hint_newfolder);
@@ -657,17 +652,11 @@ public class MainActivity extends ListActivity
 
 						String curDir = currentDirectory.getAbsolutePath();
 
-						if(currentDirectory.getParent() != null)
-						{
-							curDir = curDir + "/";
-						}
-
-
 						if(name.length() > 0)
 						{
 							try
 							{
-								if(MyUtil.createDir(new File(curDir + name)))
+								if(MyUtil.createDir(new File(curDir + "/" + name)))
 								{
 									refreshDir();
 								}
@@ -753,8 +742,10 @@ public class MainActivity extends ListActivity
 
 		if(showBottomBarFlag && (mBottombar == null || mMainlayout == null))
 		{
-			mBottombar = getLayoutInflater().inflate(R.layout.bottom_bar, null);
 			mMainlayout = (ViewGroup) findViewById(R.id.mainLayout);
+			mBottombar = getLayoutInflater().inflate(R.layout.bottom_bar, mMainlayout, false);
+			//mBottombar = getLayoutInflater().inflate(R.layout.bottom_bar, null);
+
 			Button btnUpDir = (Button) mBottombar.findViewById(R.id.LeftButton);
 			btnUpDir.setText(R.string.action_updir);
 			btnUpDir.setOnClickListener(new View.OnClickListener()
@@ -798,7 +789,7 @@ public class MainActivity extends ListActivity
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
 		Editor editor = pref.edit();
 		editor.putInt(getString(R.string.prefFileListOrderKey), mCurrentOrder);
-		editor.commit();
+		editor.apply();
 	}
 
 

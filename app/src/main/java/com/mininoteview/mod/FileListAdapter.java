@@ -37,7 +37,7 @@ class FileListAdapter extends ArrayAdapter<String>
 
 		if(convertView == null)
 		{
-			view = mInflater.inflate(R.layout.file_row_with_icon, null);
+			view = mInflater.inflate(R.layout.file_row_with_icon, parent, false);
 		}
 
 		String name = this.getItem(position);

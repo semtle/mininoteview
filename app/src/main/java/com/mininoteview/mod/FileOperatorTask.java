@@ -288,7 +288,7 @@ class FileOperatorTask extends AsyncTask<String, Integer, Boolean>
 	protected void onCancelled()
 	{
 		if(mProgressDialog != null && mProgressDialog.isShowing()) mProgressDialog.dismiss();
-		Toast.makeText(mActivity, "canceling...", Toast.LENGTH_SHORT).show();
+		Toast.makeText(mActivity, "Canceling...", Toast.LENGTH_SHORT).show();
 		mActivity.refreshDir();
 		super.onCancelled();
 	}

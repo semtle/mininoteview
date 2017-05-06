@@ -4,8 +4,8 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId 'com.mininoteview.mod'
-        minSdkVersion 4
-        targetSdkVersion 4
+        minSdkVersion 10
+        targetSdkVersion 10
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_6
             targetCompatibility JavaVersion.VERSION_1_6

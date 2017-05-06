@@ -54,12 +54,6 @@
     <string name="category_dir">ファイルブラウザ</string>
     <string name="category_edit">メモ閲覧</string>
 
-    <string name="prefPWResetTimer">パスワードタイマー(分)</string>
-    <string name="prefPWResetTimerSummary">分間</string>
-
-    <string name="prefCharsetName">文字コード</string>
-    <string name="prefCharsetNameSummary">文字コード</string>
-
     <string name="prefShowButtons">下部のボタン表示</string>
     <string name="prefShowButtonsSummary">ボタン表示(上へ/メニュー,閉じる/メニュー)</string>
     <string name="prefShowButtonsSummaryOn">ボタン表示(上へ/メニュー,閉じる/メニュー)</string>
@@ -68,9 +62,6 @@
     <string name="prefFontSize">文字サイズ</string>
     <string name="prefFontSizeSummary">文字サイズ</string>
     <string name="prefFontSizeSampleText">サイズ(sp)</string>
-
-    <string name="prefLineBreakCode">改行コード</string>
-    <string name="prefLineBreakCodeSummary">改行コード</string>
 
 
     <string name="prefTypeface">フォント</string>

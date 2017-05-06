@@ -44,8 +44,9 @@ public class SelectFileName extends ListActivity
 	private static final int MODEID_MOVE = 3;
 	private int modeID = MODEID_NONE;
 
+	private final String mInitDirName = Environment.getExternalStorageDirectory().getAbsolutePath();
+	private File currentDirectory = new File(mInitDirName);
 
-	private String DirPath;
 	private String filename;
 	private String selectedFormat = FORMAT_TXT;
 	private List<String> items = null;
@@ -77,11 +78,9 @@ public class SelectFileName extends ListActivity
 		{
 			filename = extras.getString(INTENT_FILEPATH);
 			File aFile = new File(filename);
-			DirPath = aFile.getParent();
-			if(DirPath == null || DirPath.equals(""))
-			{
-				DirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-			}
+			currentDirectory = aFile.getParentFile();
+			if(currentDirectory == null)
+				currentDirectory = new File(mInitDirName);
 
 			mEdtFileName.setText(aFile.getName());
 
@@ -174,7 +173,7 @@ public class SelectFileName extends ListActivity
 
 
 				intent.putExtra(INTENT_FILENAME, strFileName);
-				intent.putExtra(INTENT_DIRPATH, DirPath);
+				intent.putExtra(INTENT_DIRPATH, currentDirectory.getAbsolutePath());
 				intent.putExtra(INTENT_ORG_FILENAME, filename);
 
 				if(modeID == MODEID_SAVE)
@@ -184,14 +183,8 @@ public class SelectFileName extends ListActivity
 				}
 
 				String strFilePath;
-				if(DirPath.equals("/"))
-				{
-					strFilePath = "/" + strFileName;
-				}
-				else
-				{
-					strFilePath = DirPath + "/" + strFileName;
-				}
+				strFilePath = currentDirectory.getAbsolutePath() + "/" + strFileName;
+
 				intent.putExtra(INTENT_FILEPATH, strFilePath);
 				setResult(RESULT_OK, intent);
 				finish();
@@ -228,54 +221,43 @@ public class SelectFileName extends ListActivity
 		if(strItem.equals(".."))
 		{
 			upOneLevel();
+			return;
 		}
-		else if(strItem.startsWith("/"))
+		if(strItem.startsWith("/"))
 		{
-			String newPath;
-			if(DirPath.equals("/"))
-			{
-				newPath = strItem;
-			}
-			else
-			{
-				newPath = DirPath + strItem;
-			}
-			File[] files = (new File(newPath)).listFiles();
+			File newPath;
+			newPath = new File(currentDirectory.getAbsolutePath() + strItem);
+			File[] files = newPath.listFiles();
 			if(files == null)
 			{
 				Toast.makeText(this, "Unable Access...", Toast.LENGTH_SHORT).show();
 				return;
 			}
-			DirPath = newPath;
+			currentDirectory = newPath;
 			fillList();
+			return;
 		}
-		else
-		{
-			EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
-			edtFileName.setText(strItem);
-		}
+
+		EditText edtFileName = (EditText) findViewById(R.id.edtFileName);
+		edtFileName.setText(strItem);
+
 
 	}
 
 	private void upOneLevel()
 	{
-		if(DirPath.lastIndexOf("/") <= 0)
-		{
-			DirPath = DirPath.substring(0, DirPath.lastIndexOf("/") + 1);
-		}
-		else
-		{
-			DirPath = DirPath.substring(0, DirPath.lastIndexOf("/"));
-		}
+		File parent = currentDirectory.getParentFile();
+		if(parent != null)
+			currentDirectory = parent;
 		fillList();
 	}
 
 	private void fillList()
 	{
-		List<String> fnamelist = MyUtil.fillList(DirPath);
+		List<String> fnamelist = MyUtil.fillList(currentDirectory);
 
 		TextView txtDirName = (TextView) findViewById(R.id.txtDirName);
-		txtDirName.setText(DirPath);
+		txtDirName.setText(currentDirectory.getAbsolutePath());
 
 		if(items != null)
 		{

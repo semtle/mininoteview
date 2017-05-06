@@ -6,13 +6,6 @@
             android:summary="@string/prefShowButtonsSummary"
             android:title="@string/prefShowButtons"
             />
-        <ListPreference
-            android:entries="@array/timer_list_entries"
-            android:entryValues="@array/timer_list_entryvalues"
-            android:key="@string/prefPWResetTimerKey"
-            android:summary="@string/prefPWResetTimerSummary"
-            android:title="@string/prefPWResetTimer"
-            />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/category_dir">
@@ -24,21 +17,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/category_edit">
-        <ListPreference
-            android:entries="@array/charset_list_entries"
-            android:entryValues="@array/charset_list_entryvalues"
-            android:key="@string/prefCharsetNameKey"
-            android:summary="@string/prefCharsetNameSummary"
-            android:title="@string/prefCharsetName"
-            />
-        <ListPreference
-            android:entries="@array/line_break_code_entries"
-            android:entryValues="@array/line_break_code_entryvalues"
-            android:key="@string/prefLineBreakCodeKey"
-            android:summary="@string/prefLineBreakCodeSummary"
-            android:title="@string/prefLineBreakCode"
-            />
-
         <CheckBoxPreference
             android:key="@string/prefNoTitleBarKey"
             android:summary="@string/prefNoTitleBarSummary"

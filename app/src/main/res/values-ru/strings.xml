@@ -60,12 +60,7 @@
     <string name="category_dir">Обзор файлов</string>
     <string name="category_edit">Редактор заметок</string>
 
-    <string name="prefPWResetTimer">Кэшировать пароль</string>
     <!-- <string name="prefPWResetTimerSummary">Время до повторного запроса пароля</string> -->
-    <string name="prefPWResetTimerSummary">мин.</string>
-
-    <string name="prefCharsetName">Кодировка</string>
-    <string name="prefCharsetNameSummary">Кодировка символов</string>
 
     <string name="prefShowButtons">Нижние кнопки</string>
     <string name="prefShowButtonsSummary">Показать кнопки (Наверх, Закрыть, Меню)</string>
@@ -75,9 +70,6 @@
     <string name="prefFontSize">Размер шрифта</string>
     <string name="prefFontSizeSummary">Высота буквы</string>
     <string name="prefFontSizeSampleText">Размер (ТП)</string>
-
-    <string name="prefLineBreakCode">Конец строки</string>
-    <string name="prefLineBreakCodeSummary">Символ возврата каретки</string>
 
     <string name="prefTypeface">Стиль шрифта</string>
     <string name="prefTypefaceSummary">Обычный/Моноширинный/Без засечек/С засечками</string>

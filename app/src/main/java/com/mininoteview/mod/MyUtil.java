@@ -33,7 +33,7 @@ class MyUtil
 	private static final String CHIHEADER = "BF01";
 	private static final String CHSHEADER = "BF0S";
 
-	static int folderFirstCompare(String object1, String object2, int sortorder)
+	private static int folderFirstCompare(String object1, String object2, int sortorder)
 	{
 		if(object1.equals(".."))
 			return -1;
@@ -71,20 +71,8 @@ class MyUtil
 		return res + "." + ext;
 	}
 
-	static String upOneLevel(String DirPath)
-	{
-		int i = DirPath.lastIndexOf("/");
-		if(i <= 0)
-		{
-			return "/";
-		}
-		else
-			return DirPath.substring(0, i);
-	}
-
 	static List<String> fillList(File dir, final int sortOrder)
 	{
-		String DirPath = dir.getAbsolutePath();
 		File[] files = dir.listFiles();
 		if(files == null)
 		{
@@ -93,7 +81,7 @@ class MyUtil
 
 		List<String> items = new ArrayList<String>();
 
-		if(!DirPath.equals("/"))
+		if(dir.getParentFile() != null)
 		{
 			items.add("..");
 		}
@@ -114,11 +102,12 @@ class MyUtil
 		return items;
 	}
 
-	static List<String> fillList(String DirPath)
+	static List<String> fillList(File dir)
 	{
-		return fillList(new File(DirPath), 1);
+		return fillList(dir, 1);
 	}
 
+	//// FIXME: 19/04/17 just return null, don't throw exceptions
 	static byte[] readTextFile(String strFilePath) throws Exception
 	{
 		BufferedInputStream b_ins = null;
@@ -130,7 +119,10 @@ class MyUtil
 			FileInputStream f_ins = new FileInputStream(strFilePath);
 
 			b_ins = new BufferedInputStream(f_ins);
-			b_ins.read(buff, 0, buff.length);
+			int l = b_ins.read(buff, 0, buff.length);
+			b_ins.close();
+			if(l != buff.length)
+				throw new MyUtilException(R.string.error_file_cannot_read, "File cannot be read");
 
 			return buff;
 			//			return new String(buff);
@@ -179,6 +171,22 @@ class MyUtil
 		}
 	}
 
+	static byte[] md5Key(byte[] password)
+	{
+		MessageDigest md5;
+		try
+		{
+			md5 = MessageDigest.getInstance("MD5");
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			return null;
+		}
+
+		md5.update(password);
+		return md5.digest();
+	}
+
 	//////////////////////////////////////////////////
 //		 Tombo Chi file format
 //		 0: header (4 bytes) must equal "BF01"
@@ -213,8 +221,12 @@ class MyUtil
 		try
 		{
 			FileInputStream f_ins = new FileInputStream(aFile);
-			f_ins.read(data, 0, 8);
+			int l = f_ins.read(data, 0, 8);
 			f_ins.close();
+
+			if(l != 8)
+				return -1;
+
 			String header = new String(data, 0, 4);
 			if(!header.equals(CHIHEADER))
 				return -1;
